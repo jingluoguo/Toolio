@@ -6,6 +6,7 @@ import { ArrowUpRight, CirclePlus, RotateCcw, Settings2, Sparkles, X } from "luc
 const palette = ["#D9B679", "#C87756", "#A96062", "#587C82", "#7B9676", "#5871A8", "#94748F", "#B69062"];
 const defaultEntries = ["心之所向", "深度工作", "留白片刻", "认识新人", "即时行动", "重新开始"];
 const MAX_ENTRIES = 36;
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 type Point = { x: number; y: number };
 
 function polarToCartesian(cx: number, cy: number, radius: number, angle: number): Point {
@@ -113,9 +114,9 @@ export default function WheelPage() {
     <main className="wheel-page min-h-screen overflow-hidden bg-[#F4F1EA] text-[#16252E]">
       <div className="page-grain" />
       <header className="relative z-10 mx-auto flex max-w-[1440px] items-center justify-between px-6 py-6 md:px-10 lg:px-16">
-        <a href="/" className="flex items-center gap-3" aria-label="Toolio 工具集首页"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#142B36] text-[11px] font-semibold tracking-[0.18em] text-[#F4E3BA]">T</span><span className="font-serif text-xl tracking-[0.08em]">TOOLIO</span></a>
-        <nav className="hidden items-center gap-8 text-sm text-[#53616A] md:flex"><a href="/" className="transition-colors hover:text-[#16252E]">工具集</a><a href="#about" className="transition-colors hover:text-[#16252E]">关于我们</a><a href="/" className="inline-flex items-center gap-1 border-b border-[#AD9363] pb-1 text-[#16252E]">返回工具集 <ArrowUpRight size={14} /></a></nav>
-        <a href="/" className="grid h-10 w-10 place-items-center border border-[#D2CCC0] text-[#16252E] md:hidden" aria-label="返回工具集"><span className="h-px w-4 bg-current" /></a>
+        <a href={`${basePath}/`} className="flex items-center gap-3" aria-label="Toolio 工具集首页"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#142B36] text-[11px] font-semibold tracking-[0.18em] text-[#F4E3BA]">T</span><span className="font-serif text-xl tracking-[0.08em]">TOOLIO</span></a>
+        <nav className="hidden items-center gap-8 text-sm text-[#53616A] md:flex"><a href={`${basePath}/`} className="transition-colors hover:text-[#16252E]">工具集</a><a href={`${basePath}/wheel/#about`} className="transition-colors hover:text-[#16252E]">关于我们</a><a href={`${basePath}/`} className="inline-flex items-center gap-1 border-b border-[#AD9363] pb-1 text-[#16252E]">返回工具集 <ArrowUpRight size={14} /></a></nav>
+        <a href={`${basePath}/`} className="grid h-10 w-10 place-items-center border border-[#D2CCC0] text-[#16252E] md:hidden" aria-label="返回工具集"><span className="h-px w-4 bg-current" /></a>
       </header>
 
       <section id="wheel" className="relative z-10 mx-auto flex min-h-[calc(100vh-90px)] max-w-[1440px] items-center px-6 pb-12 pt-4 md:px-10 lg:px-16 lg:pb-16 lg:pt-0">

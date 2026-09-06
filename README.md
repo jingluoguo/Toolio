@@ -70,6 +70,27 @@ yarn build
 yarn start
 ```
 
+## 部署到 GitHub Pages
+
+项目已配置 GitHub Actions 工作流：`.github/workflows/deploy-pages.yml`。
+
+每次推送到 `master` 分支后，工作流会自动执行以下步骤：
+
+1. 安装 Node.js 20 和 Yarn 依赖。
+2. 使用 Next.js 生成静态站点。
+3. 上传 `out/` 构建产物。
+4. 部署到 GitHub Pages。
+
+首次启用时，在 GitHub 仓库中打开：
+
+`Settings` → `Pages` → `Build and deployment` → `Source` → 选择 `GitHub Actions`
+
+当前仓库为项目站点，部署地址通常为：
+
+<https://jingluoguo.github.io/Toolio/>
+
+GitHub Actions 会自动将仓库名注入 `NEXT_PUBLIC_BASE_PATH`，因此项目在 `/Toolio/` 子路径下也能正常处理页面链接。
+
 ## 项目结构
 
 ```text
