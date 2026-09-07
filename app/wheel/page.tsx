@@ -3,7 +3,8 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CirclePlus, Hand, Heart, RotateCcw, Settings2, Sparkles, Timer, X } from "lucide-react";
 
-const palette = ["#f35aab", "#ea86c1", "#f2449f", "#f7a7d3", "#e95aaf", "#f28bc7"];
+const DEFAULT_DARK_COLOR = "#65c552";
+const DEFAULT_LIGHT_COLOR = "#a6e77e";
 const defaultEntries = ["整理本周课堂笔记", "开始十分钟", "把手机放远一点", "回复一条消息", "喝一杯水", "完成最小的一步"];
 const MAX_ENTRIES = 36;
 const AUTO_SPIN_MIN_MS = 3200;
@@ -65,6 +66,12 @@ export default function WheelPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState(title);
   const [draftEntries, setDraftEntries] = useState(entries);
+  const [darkColor, setDarkColor] = useState(DEFAULT_DARK_COLOR);
+  const [lightColor, setLightColor] = useState(DEFAULT_LIGHT_COLOR);
+  const [showCenterMark, setShowCenterMark] = useState(true);
+  const [draftDarkColor, setDraftDarkColor] = useState(darkColor);
+  const [draftLightColor, setDraftLightColor] = useState(lightColor);
+  const [draftShowCenterMark, setDraftShowCenterMark] = useState(showCenterMark);
   const [pauseMode, setPauseMode] = useState<PauseMode>("manual");
   const [draftPauseMode, setDraftPauseMode] = useState<PauseMode>(pauseMode);
   const [manualSpin, setManualSpin] = useState(false);
@@ -75,6 +82,7 @@ export default function WheelPage() {
   const wheelRef = useRef<HTMLDivElement | null>(null);
 
   const wheelLabels = useMemo(() => getWheelLabels(entries), [entries]);
+  const wheelColor = (index: number) => index % 2 === 0 ? darkColor : lightColor;
   const step = 360 / wheelLabels.length;
   const segments = useMemo(() => wheelLabels.map((label, index) => ({ label, index, start: index * step, center: index * step + step / 2 })), [wheelLabels, step]);
 
@@ -155,6 +163,9 @@ export default function WheelPage() {
     if (spinning) return;
     setDraftTitle(title);
     setDraftEntries(entries);
+    setDraftDarkColor(darkColor);
+    setDraftLightColor(lightColor);
+    setDraftShowCenterMark(showCenterMark);
     setDraftPauseMode(pauseMode);
     setNewItem("");
     setSettingsOpen(true);
@@ -164,6 +175,9 @@ export default function WheelPage() {
     const cleanEntries = draftEntries.map((entry) => entry.trim()).filter(Boolean).slice(0, MAX_ENTRIES);
     if (cleanEntries.length < 2) return;
     setEntries(cleanEntries);
+    setDarkColor(draftDarkColor);
+    setLightColor(draftLightColor);
+    setShowCenterMark(draftShowCenterMark);
     setTitle(draftTitle.trim() || "未命名计划");
     setPauseMode(draftPauseMode);
     setResult(null);
@@ -190,7 +204,7 @@ export default function WheelPage() {
         <div className="brand-mark"><span>today&apos;s</span><strong>lucky pick</strong></div>
         <div className="header-actions">
           <button type="button" className="header-icon" onClick={openSettings} disabled={spinning} aria-label="编辑转盘"><Settings2 size={20} /></button>
-          <button type="button" className="header-icon reset-icon" onClick={() => { if (!spinning) { setEntries(defaultEntries); setTitle("拖延症学习计划"); setPauseMode("manual"); setResult(null); setRotation(0); } }} disabled={spinning} aria-label="恢复示例"><RotateCcw size={19} /></button>
+          <button type="button" className="header-icon reset-icon" onClick={() => { if (!spinning) { setEntries(defaultEntries); setTitle("拖延症学习计划"); setPauseMode("manual"); setDarkColor(DEFAULT_DARK_COLOR); setLightColor(DEFAULT_LIGHT_COLOR); setShowCenterMark(true); setResult(null); setRotation(0); } }} disabled={spinning} aria-label="恢复示例"><RotateCcw size={19} /></button>
         </div>
       </header>
 
@@ -219,17 +233,16 @@ export default function WheelPage() {
                 const textPoint = polarToCartesian(50, 50, dense ? 30.5 : 31.5, segment.center);
                 const lines = wrapWheelLabel(segment.label, charsPerLine, maxLines);
                 return <g key={`${segment.label}-${segment.index}`}>
-                  <path d={segmentPath(segment.start, segment.start + step)} fill={palette[segment.index % palette.length]} stroke="#ffc3df" strokeWidth=".5" vectorEffect="non-scaling-stroke" />
+                  <path d={segmentPath(segment.start, segment.start + step)} fill={wheelColor(segment.index)} stroke="#d8edd9" strokeWidth=".5" vectorEffect="non-scaling-stroke" />
                   <path d={segmentPath(segment.start + .65, segment.start + step - .65)} fill="none" stroke="rgba(255,255,255,.34)" strokeWidth=".28" />
-                  <text x={textPoint.x} y={textPoint.y} fill="#9c3d73" fontSize={fontSize} fontWeight="700" textAnchor="middle" dominantBaseline="middle" transform={`rotate(${segment.center} ${textPoint.x} ${textPoint.y})`}>{lines.map((line, index) => <tspan key={`${line}-${index}`} x={textPoint.x} dy={index === 0 ? -((lines.length - 1) * lineHeight) / 2 : lineHeight}>{line}</tspan>)}</text>
+                  <text x={textPoint.x} y={textPoint.y} fill={segment.index % 2 === 0 ? "#f2faef" : "#24513d"} fontSize={fontSize} fontWeight="700" textAnchor="middle" dominantBaseline="middle" transform={`rotate(${segment.center} ${textPoint.x} ${textPoint.y})`}>{lines.map((line, index) => <tspan key={`${line}-${index}`} x={textPoint.x} dy={index === 0 ? -((lines.length - 1) * lineHeight) / 2 : lineHeight}>{line}</tspan>)}</text>
                 </g>;
               })}
-              <circle cx="50" cy="50" r="12.8" fill="#ffd7ea" stroke="#fff" strokeWidth="1" />
+              <circle cx="50" cy="50" r="12.8" fill="#d9efd9" stroke="#fff" strokeWidth="1" />
             </svg>
           </div>
-          <button type="button" className="angel-button" onClick={pauseMode === "automatic" && spinning ? undefined : stopSpin} disabled={spinning && (pauseMode === "automatic" || settling)} aria-label={!spinning ? "开始转盘" : pauseMode === "automatic" ? "自动停止中" : settling ? "正在归位" : "停止转盘"}>
-            <AngelCatMark />
-            <span className="angel-button-label">{!spinning ? "点我开始" : pauseMode === "automatic" ? "自动停止中" : settling ? "正在归位" : "点我停止"}</span>
+          <button type="button" className={`angel-button ${showCenterMark ? "" : "simple-center-button"}`} onClick={pauseMode === "automatic" && spinning ? undefined : stopSpin} disabled={spinning && (pauseMode === "automatic" || settling)} aria-label={!spinning ? "开始转盘" : pauseMode === "automatic" ? "自动停止中" : settling ? "正在归位" : "停止转盘"}>
+            {showCenterMark ? <><AngelCatMark /><span className="angel-button-label">{!spinning ? "点我开始" : pauseMode === "automatic" ? "自动停止中" : settling ? "正在归位" : "点我停止"}</span></> : <span className="simple-center" aria-hidden="true"><strong>{!spinning ? "GO" : pauseMode === "automatic" || settling ? "..." : "STOP"}</strong><small>{entries.length} 项</small></span>}
           </button>
           <div className="selection-pointer" aria-hidden="true"><span /></div>
           {result && <div className="candy-result" role="status"><Heart size={15} fill="currentColor" /> 已选中：<strong>{result}</strong></div>}
@@ -242,13 +255,15 @@ export default function WheelPage() {
 
       {settingsOpen && <div className="settings-overlay candy-settings-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSettingsOpen(false); }}>
         <section className="settings-panel candy-settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-          <div className="flex items-start justify-between border-b border-pink-100 pb-5"><div><p className="text-xs font-medium tracking-[.12em] text-pink-500">MAKE IT YOURS</p><h2 id="settings-title" className="mt-2 text-3xl font-bold text-[#73365c]">编辑转盘</h2></div><button onClick={() => setSettingsOpen(false)} className="grid h-9 w-9 place-items-center text-pink-400" aria-label="关闭设置"><X size={19} /></button></div>
-          <label className="mt-6 block text-xs tracking-[.1em] text-pink-500" htmlFor="wheel-title">转盘名称</label><input id="wheel-title" value={draftTitle} onChange={(event) => setDraftTitle(event.target.value)} maxLength={20} className="settings-title mt-2 w-full bg-transparent text-2xl font-bold text-[#73365c] outline-none" />
-          <div className="mt-6"><p id="pause-mode-label" className="text-xs tracking-[.1em] text-pink-500">停止方式</p><div className="pause-mode-control mt-2" role="group" aria-labelledby="pause-mode-label"><button type="button" className={draftPauseMode === "manual" ? "is-selected" : ""} onClick={() => setDraftPauseMode("manual")} aria-pressed={draftPauseMode === "manual"}><Hand size={16} /><span>手动暂停</span><small>再次点击中心停止</small></button><button type="button" className={draftPauseMode === "automatic" ? "is-selected" : ""} onClick={() => setDraftPauseMode("automatic")} aria-pressed={draftPauseMode === "automatic"}><Timer size={16} /><span>自动暂停</span><small>每次随机 3.2-6.8 秒</small></button></div></div>
-          <div className="mt-7 flex items-center justify-between"><label className="text-xs tracking-[.1em] text-pink-500" htmlFor="new-entry">选项</label><span className="text-xs text-pink-400">{draftEntries.length} / {MAX_ENTRIES}</span></div>
-          <div className="settings-list mt-3">{draftEntries.map((entry, index) => <div className="settings-entry" key={`${entry}-${index}`}><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: palette[index % palette.length] }} /><input value={entry} onChange={(event) => setDraftEntries((items) => items.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} maxLength={18} aria-label={`选项 ${index + 1}`} /><button onClick={() => removeEntry(index)} disabled={draftEntries.length <= 2} aria-label={`删除 ${entry}`}><X size={14} /></button></div>)}</div>
-          <form onSubmit={addEntry} className="mt-4 flex border-b border-pink-200 pb-2"><CirclePlus size={18} className="mr-3 shrink-0 text-pink-500" /><input id="new-entry" value={newItem} onChange={(event) => setNewItem(event.target.value)} maxLength={18} disabled={draftEntries.length >= MAX_ENTRIES} className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-pink-300" placeholder={draftEntries.length >= MAX_ENTRIES ? "已达到 36 个选项" : "添加一个新选项"} /><button type="submit" disabled={!newItem.trim() || draftEntries.length >= MAX_ENTRIES} className="text-xs text-pink-500 disabled:opacity-30">加入</button></form>
-          <div className="mt-8 flex justify-end gap-3"><button onClick={() => setSettingsOpen(false)} className="border border-pink-200 px-4 py-2.5 text-sm text-pink-500">取消</button><button onClick={saveSettings} disabled={draftEntries.filter((entry) => entry.trim()).length < 2} className="bg-[#ef4e9f] px-5 py-2.5 text-sm text-white shadow-[0_8px_18px_rgba(239,78,159,.26)] disabled:opacity-40">保存设置</button></div>
+          <div className="flex items-start justify-between border-b border-emerald-100 pb-5"><div><p className="text-xs font-medium tracking-[.12em] text-emerald-700">MAKE IT YOURS</p><h2 id="settings-title" className="mt-2 text-3xl font-bold text-[#24513d]">编辑转盘</h2></div><button onClick={() => setSettingsOpen(false)} className="grid h-9 w-9 place-items-center text-emerald-600" aria-label="关闭设置"><X size={19} /></button></div>
+          <label className="mt-6 block text-xs tracking-[.1em] text-emerald-700" htmlFor="wheel-title">转盘名称</label><input id="wheel-title" value={draftTitle} onChange={(event) => setDraftTitle(event.target.value)} maxLength={20} className="settings-title mt-2 w-full bg-transparent text-2xl font-bold text-[#24513d] outline-none" />
+          <div className="mt-6"><p className="text-xs tracking-[.1em] text-emerald-700">转盘颜色</p><div className="wheel-color-control mt-2"><label><span className="color-choice-swatch" style={{ backgroundColor: draftDarkColor }} /><span>深色扇区</span><input type="color" value={draftDarkColor} onChange={(event) => setDraftDarkColor(event.target.value)} aria-label="选择深色扇区颜色" /></label><label><span className="color-choice-swatch" style={{ backgroundColor: draftLightColor }} /><span>浅色扇区</span><input type="color" value={draftLightColor} onChange={(event) => setDraftLightColor(event.target.value)} aria-label="选择浅色扇区颜色" /></label></div></div>
+          <label className="center-visibility-toggle mt-5"><input type="checkbox" checked={draftShowCenterMark} onChange={(event) => setDraftShowCenterMark(event.target.checked)} /><span><strong>显示中心天使猫</strong><small>关闭后显示 GO 和选项数量</small></span></label>
+          <div className="mt-6"><p id="pause-mode-label" className="text-xs tracking-[.1em] text-emerald-700">停止方式</p><div className="pause-mode-control mt-2" role="group" aria-labelledby="pause-mode-label"><button type="button" className={draftPauseMode === "manual" ? "is-selected" : ""} onClick={() => setDraftPauseMode("manual")} aria-pressed={draftPauseMode === "manual"}><Hand size={16} /><span>手动暂停</span><small>再次点击中心停止</small></button><button type="button" className={draftPauseMode === "automatic" ? "is-selected" : ""} onClick={() => setDraftPauseMode("automatic")} aria-pressed={draftPauseMode === "automatic"}><Timer size={16} /><span>自动暂停</span><small>每次随机 3.2-6.8 秒</small></button></div></div>
+          <div className="mt-7 flex items-center justify-between"><label className="text-xs tracking-[.1em] text-emerald-700" htmlFor="new-entry">选项</label><span className="text-xs text-emerald-600">{draftEntries.length} / {MAX_ENTRIES}</span></div>
+          <div className="settings-list mt-3">{draftEntries.map((entry, index) => <div className="settings-entry" key={`${entry}-${index}`}><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: index % 2 === 0 ? draftDarkColor : draftLightColor }} /><input value={entry} onChange={(event) => setDraftEntries((items) => items.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} maxLength={18} aria-label={`选项 ${index + 1}`} /><button onClick={() => removeEntry(index)} disabled={draftEntries.length <= 2} aria-label={`删除 ${entry}`}><X size={14} /></button></div>)}</div>
+          <form onSubmit={addEntry} className="mt-4 flex border-b border-emerald-200 pb-2"><CirclePlus size={18} className="mr-3 shrink-0 text-emerald-700" /><input id="new-entry" value={newItem} onChange={(event) => setNewItem(event.target.value)} maxLength={18} disabled={draftEntries.length >= MAX_ENTRIES} className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-emerald-300" placeholder={draftEntries.length >= MAX_ENTRIES ? "已达到 36 个选项" : "添加一个新选项"} /><button type="submit" disabled={!newItem.trim() || draftEntries.length >= MAX_ENTRIES} className="text-xs text-emerald-700 disabled:opacity-30">加入</button></form>
+          <div className="mt-8 flex justify-end gap-3"><button onClick={() => setSettingsOpen(false)} className="border border-emerald-200 px-4 py-2.5 text-sm text-emerald-700">取消</button><button onClick={saveSettings} disabled={draftEntries.filter((entry) => entry.trim()).length < 2} className="bg-[#2b7654] px-5 py-2.5 text-sm text-white shadow-[0_8px_18px_rgba(43,118,84,.26)] disabled:opacity-40">保存设置</button></div>
         </section>
       </div>}
     </main>
