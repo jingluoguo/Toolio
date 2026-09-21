@@ -3,8 +3,8 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CirclePlus, Hand, Heart, RotateCcw, Settings2, Sparkles, Timer, X } from "lucide-react";
 
-const DEFAULT_DARK_COLOR = "#65c552";
-const DEFAULT_LIGHT_COLOR = "#a6e77e";
+const DEFAULT_DARK_COLOR = "#17667a";
+const DEFAULT_LIGHT_COLOR = "#8fd5d6";
 const defaultEntries = ["整理本周课堂笔记", "开始十分钟", "把手机放远一点", "回复一条消息", "喝一杯水", "完成最小的一步"];
 const MAX_ENTRIES = 36;
 const AUTO_SPIN_MIN_MS = 3200;
@@ -201,7 +201,7 @@ export default function WheelPage() {
     <main className={`candy-wheel-page ${spinning ? "is-spinning" : ""}`}>
       <header className="candy-header">
         <a href={`${basePath}/`} className="header-icon" aria-label="返回工具集"><ArrowLeft size={22} /></a>
-        <div className="brand-mark"><span>today&apos;s</span><strong>lucky pick</strong></div>
+        <div className="brand-mark"><span>TOOLIO / 01</span><strong>决策转盘</strong></div>
         <div className="header-actions">
           <button type="button" className="header-icon" onClick={openSettings} disabled={spinning} aria-label="编辑转盘"><Settings2 size={20} /></button>
           <button type="button" className="header-icon reset-icon" onClick={() => { if (!spinning) { setEntries(defaultEntries); setTitle("拖延症学习计划"); setPauseMode("manual"); setDarkColor(DEFAULT_DARK_COLOR); setLightColor(DEFAULT_LIGHT_COLOR); setShowCenterMark(true); setResult(null); setRotation(0); } }} disabled={spinning} aria-label="恢复示例"><RotateCcw size={19} /></button>
@@ -233,12 +233,12 @@ export default function WheelPage() {
                 const textPoint = polarToCartesian(50, 50, dense ? 30.5 : 31.5, segment.center);
                 const lines = wrapWheelLabel(segment.label, charsPerLine, maxLines);
                 return <g key={`${segment.label}-${segment.index}`}>
-                  <path d={segmentPath(segment.start, segment.start + step)} fill={wheelColor(segment.index)} stroke="#d8edd9" strokeWidth=".5" vectorEffect="non-scaling-stroke" />
+                  <path d={segmentPath(segment.start, segment.start + step)} fill={wheelColor(segment.index)} stroke="#c7e8e8" strokeWidth=".5" vectorEffect="non-scaling-stroke" />
                   <path d={segmentPath(segment.start + .65, segment.start + step - .65)} fill="none" stroke="rgba(255,255,255,.34)" strokeWidth=".28" />
-                  <text x={textPoint.x} y={textPoint.y} fill={segment.index % 2 === 0 ? "#f2faef" : "#24513d"} fontSize={fontSize} fontWeight="700" textAnchor="middle" dominantBaseline="middle" transform={`rotate(${segment.center} ${textPoint.x} ${textPoint.y})`}>{lines.map((line, index) => <tspan key={`${line}-${index}`} x={textPoint.x} dy={index === 0 ? -((lines.length - 1) * lineHeight) / 2 : lineHeight}>{line}</tspan>)}</text>
+                  <text x={textPoint.x} y={textPoint.y} fill={segment.index % 2 === 0 ? "#f5ffff" : "#073b4a"} fontSize={fontSize} fontWeight="700" textAnchor="middle" dominantBaseline="middle" transform={`rotate(${segment.center} ${textPoint.x} ${textPoint.y})`}>{lines.map((line, index) => <tspan key={`${line}-${index}`} x={textPoint.x} dy={index === 0 ? -((lines.length - 1) * lineHeight) / 2 : lineHeight}>{line}</tspan>)}</text>
                 </g>;
               })}
-              <circle cx="50" cy="50" r="12.8" fill="#d9efd9" stroke="#fff" strokeWidth="1" />
+              <circle cx="50" cy="50" r="12.8" fill="#c3e9e7" stroke="#fff" strokeWidth="1" />
             </svg>
           </div>
           <button type="button" className={`angel-button ${showCenterMark ? "" : "simple-center-button"}`} onClick={pauseMode === "automatic" && spinning ? undefined : stopSpin} disabled={spinning && (pauseMode === "automatic" || settling)} aria-label={!spinning ? "开始转盘" : pauseMode === "automatic" ? "自动停止中" : settling ? "正在归位" : "停止转盘"}>

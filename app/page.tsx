@@ -1,28 +1,45 @@
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+"use client";
+
+import { ArrowDown, Compass, MoveUpRight } from "lucide-react";
+import { MouseEvent, useRef } from "react";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const tools = [
-  { href: "/wheel", eyebrow: "01 / DECISION", title: "决策转盘", description: "把多个选项交给一次明确的转动。" },
-  { href: "/activity", eyebrow: "02 / EDITOR", title: "活动海报编辑器", description: "整理内容，并导出可分享的海报。" },
+  { href: "/wheel", index: "01", title: "决策转盘", description: "把犹豫交给一次明确的转动。", label: "即刻开始" },
+  { href: "/activity", index: "02", title: "活动海报", description: "把一场相聚，整理成值得分享的消息。", label: "开始编辑" },
 ];
 
 export default function Home() {
-  return (
-    <main className="portal-page min-h-screen overflow-hidden bg-[#F4F1EA] text-[#16252E]">
-      <div className="page-grain" />
-      <header className="relative z-10 mx-auto flex max-w-[1440px] items-center justify-between px-6 py-6 md:px-10 lg:px-16">
-        <a href={`${basePath}/`} className="flex items-center gap-3" aria-label="Toolio 首页"><span className="grid h-9 w-9 place-items-center rounded-full bg-[#142B36] text-[11px] font-semibold tracking-[0.18em] text-[#F4E3BA]">T</span><span className="font-serif text-xl tracking-[0.08em]">TOOLIO</span></a>
-        <nav className="hidden items-center gap-8 text-sm text-[#53616A] md:flex"><a href={`${basePath}/#tools`} className="border-b border-[#AD9363] pb-1 text-[#16252E]">工具集</a><a href={`${basePath}/#about`} className="transition-colors hover:text-[#16252E]">关于我们</a><a href={`${basePath}/#tools`} className="inline-flex items-center gap-1 transition-colors hover:text-[#16252E]">开始使用 <ArrowUpRight size={14} /></a></nav>
-        <a href={`${basePath}/#tools`} className="inline-flex items-center gap-1 border-b border-[#AD9363] pb-1 text-xs text-[#16252E] md:hidden">开始使用 <ArrowUpRight size={13} /></a>
-      </header>
+  const sceneRef = useRef<HTMLElement>(null);
 
-      <section id="tools" className="relative z-10 mx-auto grid min-h-[calc(100vh-88px)] max-w-[1440px] grid-rows-[1fr_auto] px-6 pb-6 pt-10 md:px-10 md:pb-8 md:pt-16 lg:px-16 lg:pt-20">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_.95fr] lg:gap-24">
-          <div className="max-w-3xl"><p className="mb-7 flex items-center gap-2 text-xs font-medium tracking-[0.18em] text-[#9B7A43]"><span className="h-px w-8 bg-[#9B7A43]" /> TOOLIO / COLLECTION</p><h1 className="max-w-3xl font-serif text-5xl leading-[1.08] text-[#142B36] md:text-7xl">给日常工具，<br /><span className="text-[#8D7650]">一点审美。</span></h1><p className="mt-8 max-w-xl text-[15px] leading-7 text-[#66737B]">一组克制、好用、值得反复打开的小工具。为思考留出空间，也为行动找到方向。</p><a href={`${basePath}/#tools`} className="mt-10 inline-flex items-center gap-3 bg-[#142B36] px-5 py-3 text-sm font-medium text-[#F4F1EA] transition-transform hover:-translate-y-0.5">浏览工具集 <ArrowRight size={16} /></a></div>
-          <div className="border-l border-[#C8BDAA] pl-6 md:pl-10"><div className="flex items-end justify-between border-b border-[#D8D0C2] pb-4"><p className="text-xs font-medium tracking-[0.18em] text-[#9B7A43]">THE COLLECTION</p><span className="font-serif text-5xl leading-none text-[#C6B69A]">02</span></div><div className="divide-y divide-[#D8D0C2]">{tools.map((tool) => <a key={tool.title} href={`${basePath}${tool.href}/`} className="group flex items-center justify-between gap-5 py-6"><div><p className="text-xs tracking-[0.14em] text-[#9B7A43]">{tool.eyebrow}</p><h2 className="mt-2 font-serif text-2xl text-[#142B36]">{tool.title}</h2><p className="mt-2 text-sm leading-6 text-[#68757A]">{tool.description}</p></div><ArrowUpRight className="shrink-0 text-[#9B7A43] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" size={19} /></a>)}</div></div>
+  const moveScene = (event: MouseEvent<HTMLElement>) => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const box = scene.getBoundingClientRect();
+    scene.style.setProperty("--scene-x", `${((event.clientX - box.left) / box.width - .5) * 14}px`);
+    scene.style.setProperty("--scene-y", `${((event.clientY - box.top) / box.height - .5) * 10}px`);
+  };
+
+  return (
+    <main className="portal-page">
+      <section ref={sceneRef} className="portal-scene" onMouseMove={moveScene} onMouseLeave={() => { sceneRef.current?.style.setProperty("--scene-x", "0px"); sceneRef.current?.style.setProperty("--scene-y", "0px"); }}>
+        <div className="portal-image" aria-hidden="true" />
+        <div className="portal-shade" aria-hidden="true" />
+        <header className="portal-header">
+          <a href={`${basePath}/`} className="portal-brand" aria-label="Toolio 首页"><span className="portal-brand-mark"><Compass size={19} strokeWidth={2.2} /></span><span><b>Toolio</b><small>把日常理清楚</small></span></a>
+          <nav className="portal-nav" aria-label="主导航"><a href="#about">关于 Toolio</a><a href="#tools">工具集 <span>02</span></a></nav>
+        </header>
+        <div className="portal-hero" id="about">
+          <p className="portal-meta"><span className="portal-pulse" /> TOOLIO / DAILY TOOLS</p>
+          <div className="portal-title-wrap"><h1>穿过杂音。<em>看见下一步。</em></h1><p>当选择变多、事情变杂，给自己一个清晰的入口。</p></div>
+          <p className="portal-side-note">两件小工具，<br />帮你把眼前的事做得更明白。</p>
+          <a href="#tools" className="portal-explore">进入工具 <ArrowDown size={17} /></a>
         </div>
-        <div id="about" className="flex items-center justify-between gap-5 border-t border-[#D8D0C2] pt-5 text-xs tracking-[0.12em] text-[#7A8587]"><div className="flex items-center gap-5"><span>TOOLS FOR A QUIETER DAY</span><span className="hidden h-px w-24 bg-[#C8BDAA] sm:block" /><span>02 AVAILABLE</span></div><div className="hidden text-[#8F9997] sm:block">A SMALL COLLECTION <span className="px-2">·</span> 2026</div></div>
+      </section>
+      <section className="portal-tools" id="tools" aria-label="工具集">
+        <div className="portal-tools-head"><span>02 / WORKING TOOLS</span><h2>从眼前这一件事开始</h2></div>
+        <div className="portal-tool-grid">{tools.map((tool) => <a key={tool.href} href={`${basePath}${tool.href}/`} className="portal-tool-card"><span className="portal-card-index">{tool.index}</span><MoveUpRight className="portal-card-arrow" size={19} /><div><p>{tool.label}</p><h3>{tool.title}</h3><span>{tool.description}</span></div></a>)}</div>
       </section>
     </main>
   );

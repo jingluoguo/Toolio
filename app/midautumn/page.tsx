@@ -250,7 +250,7 @@ export default function MidautumnPage() {
     <main className="midautumn-app">
       <header className="midautumn-header">
         <a href={`${basePath}/`} className="midautumn-header-icon" aria-label="返回工具集"><ArrowLeft size={22} /></a>
-        <div className="midautumn-brand-mark"><span>TOOLIO</span><strong>activity editor</strong></div>
+        <div className="midautumn-brand-mark"><span>TOOLIO / 02</span><strong>活动海报</strong></div>
         <div className="midautumn-header-spacer" aria-hidden="true" />
       </header>
       <aside className="midautumn-editor">
