@@ -30,12 +30,12 @@ export default function Home() {
         <div className="portal-shade" aria-hidden="true" />
         <header className="portal-header">
           <a href={`${basePath}/`} className="portal-brand" aria-label="Toolio 首页"><span className="portal-brand-mark"><Compass size={19} strokeWidth={2.2} /></span><span><b>Toolio</b><small>把日常理清楚</small></span></a>
-          <nav className="portal-nav" aria-label="主导航"><a href="#about">关于 Toolio</a><a href="#tools">工具集 <span>02</span></a></nav>
+          <nav className="portal-nav" aria-label="主导航"><a href="#about">关于 Toolio</a><a href="#tools">工具集 <span>04</span></a></nav>
         </header>
         <div className="portal-hero" id="about">
           <p className="portal-meta"><span className="portal-pulse" /> TOOLIO / DAILY TOOLS</p>
           <div className="portal-title-wrap"><h1>穿过杂音。<em>看见下一步。</em></h1><p>当选择变多、事情变杂，给自己一个清晰的入口。</p></div>
-          <p className="portal-side-note">两件小工具，<br />帮你把眼前的事做得更明白。</p>
+          <p className="portal-side-note">四件小工具，<br />帮你把眼前的事做得更明白。</p>
           <a href="#tools" className="portal-explore">进入工具 <ArrowDown size={17} /></a>
         </div>
       </section>

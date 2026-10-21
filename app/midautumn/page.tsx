@@ -22,11 +22,33 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const storageKey = "toolio-activity-editor-v1";
 const legacyStorageKey = "hangzhou-midautumn-editor-v1";
 const settingsStorageKey = "toolio-activity-editor-settings-v1";
+const guoqingStorageKey = "toolio-activity-editor-v1-guoqing";
+const guoqingSettingsStorageKey = "toolio-activity-editor-settings-v1-guoqing";
+const guoqingImageDir = "midautumn/杭州国庆活动";
+
+type TabKey = "midautumn" | "guoqing";
+
+type TabConfig = {
+  key: TabKey;
+  label: string;
+  title: string;
+  subtitle: string;
+  storageKey: string;
+  legacyStorageKeys: string[];
+  settingsStorageKey: string;
+};
+
+const TABS: TabConfig[] = [
+  { key: "midautumn", label: "中秋活动", title: "活动信息", subtitle: "活动参考", storageKey, legacyStorageKeys: [legacyStorageKey], settingsStorageKey },
+  { key: "guoqing", label: "国庆活动", title: "国庆活动", subtitle: "杭州国庆参考", storageKey: guoqingStorageKey, legacyStorageKeys: [], settingsStorageKey: guoqingSettingsStorageKey },
+];
+
 const defaultTitle = "活动信息";
 const defaultSubtitle = "活动参考";
 const defaultImage = (index: number) => `${basePath}/midautumn/posters/image${index}.png`;
+const guoqingImage = (file: string) => `${basePath}/${guoqingImageDir}/${file}`;
 
-type SeedRow = readonly [string, string, string, string, string, string, number];
+type SeedRow = readonly [string, string, string, string, string, string, number | string];
 type EditableField = "name" | "when" | "place" | "highlight" | "ticket";
 
 type Activity = {
@@ -73,6 +95,24 @@ const SEED: SeedRow[] = [
   ["游耕秋造", "9月24日-27日", "以现场安排为准", "余杭区 玉鸟集谷仓广场及大屋顶入口柏油路", "造物、采收与民艺美学主题活动，可看手作与自然材料布置。", "免票参与，无需预约", 31],
 ];
 
+const GUOQING_SEED: SeedRow[] = [
+  ["西湖景区·满觉陇桂花节", "10月1日-11日", "11:00-21:00", "西湖区 满觉陇路", "满陇桂雨、文创市集与山里咖啡茶馆，穿浅色或汉服拍照出片，杭州秋日松弛感天花板。", "免费", "满觉陇.jpg"],
+  ["西溪湿地·火柿节", "9月下旬-10月中旬（国庆全程）", "以景区公告为准", "西湖区 天目山路 西溪湿地", "柿子采摘体验、渔事表演、摇橹船与秋日限定市集，亲子、闺蜜、摄影都适合。", "门票80元（杭州公园卡免费）", "西溪火柿节.jpg"],
+  ["虎跑公园·泉颂华诞 山河安澜", "9月25日-10月7日（NPC互动10月1日-6日，快闪10月1日-7日）", "以公园安排为准", "西湖区 虎跑路39号", "听泉赏桂、宋韵市集、花神与卖花郎NPC巡游及民乐快闪，低预算文艺路线首选。", "门票15元", "虎跑公园.jpg"],
+  ["杭钢公园·赛博漫游嘉年华", "主活动10月1日-7日，机器人展至10月18日", "10:00-18:30", "拱墅区 杭钢公园（焦炉/中央大草坪/二号高炉）", "宇树、智元等机器狗与机器人拳击（10月1日-2日）、跳舞（10月6日）、新能源车夜灯车库与亲子市集，科技博主和工业风拍照必去。", "机器人展早鸟22.8元起；焦炉迷宫28元；国庆套票双人85元/亲子69元", "杭钢公园.jpg"],
+  ["东坡大剧院·国庆奇妙夜（机器人演唱会）", "10月1日-7日，每天三场", "14:00 / 16:00 / 19:00", "上城区 东坡大剧院（湖滨银泰in77）", "机器人鼓阵、机器狗醒狮、机器人武术、脱口秀与京剧选段，前厅还能免费和机器人对话。", "129-459元，优惠价90元起", "杭州大剧院.png"],
+  ["中国动漫博物馆·国庆特展", "10月1日-7日", "9:30-16:30", "滨江区 白马湖路375号", "国产动画经典展、互动体验区与动漫市集，二次元和亲子必冲。", "免费（需提前预约）", "中国动漫博物馆.jpg"],
+  ["湘湖雅韵·双节游园会+水上实景演出", "9月25日-10月7日，夜演19:40", "以演出场次为准", "萧山区 湘湖湖山广场/湘湖雅韵演艺中心", "国风巡游、风物市集、灯谜、水上实景大秀及无人机与激光水幕，约会和闺蜜夜游首选。", "101元起（单人101/双人188/三人268）", "湘湖.jpg"],
+  ["钱江新城灯光秀·国庆特别版", "10月1日-7日，每晚18:30/19:30/20:30", "以官方发布为准", "上城区 钱江新城城市阳台", "高楼灯光秀与钱塘江夜景，国庆主题灯光，0元仪式感拉满。", "免费", "钱江新城.jpg"],
+  ["天目里·沿山河集 赴桂5.0", "10月1日-5日", "以现场安排为准", "西湖区 天目里中心广场", "桂花主题市集与手作、香氛、植物、独立刊物，年轻人、探店博主和文艺风最适配。", "免费", "天目里沿山河集.jpg"],
+  ["小河公园·罐罐计划", "市集9月25日-10月7日；10月1日15:00户外瑜伽", "12:00-21:00", "拱墅区 小河路118号 小河公园", "工业风老仓库、运河露营、竹编展与LIVEHOUSE，松弛感拉满。", "市集免费，部分展览单独购票", "小河公园.png"],
+  ["小河直街·小河映月国潮夜游", "10月1日-7日", "以街区安排为准", "拱墅区 小河直街历史文化街区", "水上圆月、竹筏灯影、国风市集、江湖Bingo打卡与NPC互动，汉服党狂喜。", "免费（部分互动/游船另付）", "小河直街.jpg"],
+  ["桥西历史文化街区·非遗市集", "10月1日-7日", "以街区安排为准", "拱墅区 桥西直街", "非遗手作体验、传统小吃与运河游船，适合带长辈的文化向行程。", "免费", "桥西历史文化街区.jpg"],
+  ["星光大道·水岸音乐节", "10月1日-7日（10月4日除外）", "以现场安排为准", "滨江区 江南大道228号", "江风、音乐与落日组合，年轻人和学生党适合。", "免费", "星光大道.jpg"],
+  ["杭州乐园·彩色狂欢", "10月1日-7日", "以园区公告为准", "萧山区 风情大道", "游乐设施、彩色演艺与巡游，年轻情侣和大学生组队合适。", "提前票138元/人，当日169元；双人提前258元", "彩色狂欢.jpeg"],
+  ["烂苹果乐园·亲子狂欢", "10月1日-7日", "以园区公告为准", "萧山区 风情大道", "室内亲子乐园、魔法秀与互动剧，下雨天带娃备选。", "提前票98元/人，当日128元", "烂苹果乐园.jpeg"],
+];
+
 function makeId(index = 0) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
   return `${Date.now()}-${index}`;
@@ -83,27 +123,34 @@ function normalizeText(value: unknown) {
     .replaceAll("免票参与", "Free")
     .replaceAll("免票进入", "Free")
     .replaceAll("免票", "Free")
+    .replaceAll("免费", "Free")
     .replaceAll("Free参与", "Free")
     .replaceAll("Free进入", "Free")
     .replaceAll("消费", "💰");
 }
 
+function normalizeTicket(value: unknown) {
+  return normalizeText(value).replaceAll("元", "r");
+}
+
 function normalizeImage(value: unknown, fallback = 1) {
   const image = String(value ?? "");
   if (image.startsWith("data:")) return image;
+  if (image.includes(guoqingImageDir)) return image;
   const match = image.match(/image\d+\.png$/);
   return match ? `${basePath}/midautumn/posters/${match[0]}` : defaultImage(fallback);
 }
 
-function seedActivities() {
-  return SEED.map((row, index): Activity => ({
+function seedActivities(tab: TabKey) {
+  const rows = tab === "guoqing" ? GUOQING_SEED : SEED;
+  return rows.map((row, index): Activity => ({
     id: makeId(index),
     name: normalizeText(row[0]),
     when: normalizeText([row[1], row[2]].filter(Boolean).join("  ·  ")),
     place: normalizeText(row[3]),
     highlight: normalizeText(row[4]),
-    ticket: normalizeText(row[5]),
-    image: defaultImage(row[6]),
+    ticket: normalizeTicket(row[5]),
+    image: typeof row[6] === "number" ? defaultImage(row[6]) : guoqingImage(row[6]),
   }));
 }
 
@@ -114,7 +161,7 @@ function normalizeActivity(value: Partial<Activity>, index: number): Activity {
     when: normalizeText(value.when),
     place: normalizeText(value.place),
     highlight: normalizeText(value.highlight),
-    ticket: normalizeText(value.ticket),
+    ticket: normalizeTicket(value.ticket),
     image: normalizeImage(value.image, (index % 31) + 1),
   };
 }
@@ -127,15 +174,38 @@ function FlowerLine({ mirrored = false }: { mirrored?: boolean }) {
   );
 }
 
+type TabState = { active: number; page: number; title: string; subtitle: string };
+
+const initialTabState = (config: TabConfig): TabState => ({ active: 0, page: 0, title: config.title, subtitle: config.subtitle });
+
+const initialTabRecord = () => Object.fromEntries(TABS.map((config) => [config.key, initialTabState(config)])) as Record<TabKey, TabState>;
+
 export default function MidautumnPage() {
-  const [activities, setActivities] = useState<Activity[]>(seedActivities);
-  const [active, setActive] = useState(0);
-  const [page, setPage] = useState(0);
-  const [pageTitle, setPageTitle] = useState(defaultTitle);
-  const [pageSubtitle, setPageSubtitle] = useState(defaultSubtitle);
+  const [tab, setTab] = useState<TabKey>("midautumn");
+  const [lists, setLists] = useState<Record<TabKey, Activity[]>>({ midautumn: seedActivities("midautumn"), guoqing: seedActivities("guoqing") });
+  const [tabState, setTabState] = useState<Record<TabKey, TabState>>(initialTabRecord);
   const [hydrated, setHydrated] = useState(false);
   const [exporting, setExporting] = useState(false);
   const sheetRef = useRef<HTMLElement | null>(null);
+
+  const tabConfig = TABS.find((config) => config.key === tab) || TABS[0];
+  const activities = lists[tab];
+  const { active, page, title: pageTitle, subtitle: pageSubtitle } = tabState[tab];
+
+  const setActive = (value: number | ((prev: number) => number)) => {
+    setTabState((state) => ({ ...state, [tab]: { ...state[tab], active: typeof value === "function" ? (value as (prev: number) => number)(state[tab].active) : value } }));
+  };
+
+  const setPage = (value: number | ((prev: number) => number)) => {
+    setTabState((state) => ({ ...state, [tab]: { ...state[tab], page: typeof value === "function" ? (value as (prev: number) => number)(state[tab].page) : value } }));
+  };
+
+  const setPageTitle = (value: string) => setTabState((state) => ({ ...state, [tab]: { ...state[tab], title: value } }));
+  const setPageSubtitle = (value: string) => setTabState((state) => ({ ...state, [tab]: { ...state[tab], subtitle: value } }));
+
+  const setActivities = (updater: (items: Activity[]) => Activity[]) => {
+    setLists((state) => ({ ...state, [tab]: updater(state[tab]) }));
+  };
 
   const totalPages = Math.max(1, Math.ceil(activities.length / 3));
   const current = activities[active];
@@ -145,17 +215,27 @@ export default function MidautumnPage() {
 
   useEffect(() => {
     try {
-      const saved = window.localStorage.getItem(storageKey) || window.localStorage.getItem(legacyStorageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setActivities(parsed.map((item, index) => normalizeActivity(item, index)));
-      }
-      const savedSettings = window.localStorage.getItem(settingsStorageKey);
-      if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        if (parsedSettings && typeof parsedSettings === "object") {
-          if (typeof parsedSettings.title === "string") setPageTitle(parsedSettings.title);
-          if (typeof parsedSettings.subtitle === "string") setPageSubtitle(parsedSettings.subtitle);
+      for (const config of TABS) {
+        const saved = window.localStorage.getItem(config.storageKey) || config.legacyStorageKeys.map((key) => window.localStorage.getItem(key)).find(Boolean);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setLists((state) => ({ ...state, [config.key]: parsed.map((item: Partial<Activity>, index: number) => normalizeActivity(item, index)) }));
+          }
+        }
+        const savedSettings = window.localStorage.getItem(config.settingsStorageKey);
+        if (savedSettings) {
+          const parsedSettings = JSON.parse(savedSettings);
+          if (parsedSettings && typeof parsedSettings === "object") {
+            setTabState((state) => ({
+              ...state,
+              [config.key]: {
+                ...state[config.key],
+                title: typeof parsedSettings.title === "string" ? parsedSettings.title : state[config.key].title,
+                subtitle: typeof parsedSettings.subtitle === "string" ? parsedSettings.subtitle : state[config.key].subtitle,
+              },
+            }));
+          }
         }
       }
     } catch {
@@ -168,12 +248,14 @@ export default function MidautumnPage() {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify(activities));
-      window.localStorage.setItem(settingsStorageKey, JSON.stringify({ title: pageTitle, subtitle: pageSubtitle }));
+      for (const config of TABS) {
+        window.localStorage.setItem(config.storageKey, JSON.stringify(lists[config.key]));
+        window.localStorage.setItem(config.settingsStorageKey, JSON.stringify({ title: tabState[config.key].title, subtitle: tabState[config.key].subtitle }));
+      }
     } catch {
       // A replacement image can exceed localStorage limits; the in-memory edit still works.
     }
-  }, [activities, hydrated, pageTitle, pageSubtitle]);
+  }, [lists, tabState, hydrated]);
 
   useEffect(() => {
     if (activities.length === 0) {
@@ -187,7 +269,7 @@ export default function MidautumnPage() {
 
   const updateField = (field: EditableField, value: string) => {
     if (!current) return;
-    const nextValue = normalizeText(value);
+    const nextValue = field === "ticket" ? normalizeTicket(value) : normalizeText(value);
     setActivities((items) => items.map((item, index) => (index === active ? { ...item, [field]: nextValue } : item)));
   };
 
@@ -197,9 +279,10 @@ export default function MidautumnPage() {
   };
 
   const addActivity = () => {
+    const fallbackImage = tab === "guoqing" ? guoqingImage(GUOQING_SEED[0][6] as string) : defaultImage(1);
     setActivities((items) => [
       ...items,
-      { id: makeId(items.length), name: "新活动", when: "日期与时间待确认", place: "地点待确认", highlight: "补充活动亮点。", ticket: "以现场规则为准", image: defaultImage(1) },
+      { id: makeId(items.length), name: "新活动", when: "日期与时间待确认", place: "地点待确认", highlight: "补充活动亮点。", ticket: "以现场规则为准", image: fallbackImage },
     ]);
     const nextIndex = activities.length;
     setActive(nextIndex);
@@ -213,12 +296,9 @@ export default function MidautumnPage() {
   };
 
   const resetActivities = () => {
-    if (!window.confirm("恢复为初始活动清单？当前编辑内容会被覆盖。")) return;
-    setActivities(seedActivities());
-    setActive(0);
-    setPage(0);
-    setPageTitle(defaultTitle);
-    setPageSubtitle(defaultSubtitle);
+    if (!window.confirm(`恢复「${tabConfig.label}」初始活动清单？当前编辑内容会被覆盖。`)) return;
+    setLists((state) => ({ ...state, [tab]: seedActivities(tab) }));
+    setTabState((state) => ({ ...state, [tab]: initialTabState(tabConfig) }));
   };
 
   const replacePoster = (event: ChangeEvent<HTMLInputElement>) => {
@@ -231,17 +311,104 @@ export default function MidautumnPage() {
     reader.readAsDataURL(file);
   };
 
+  const captureSheet = async () => {
+    if (!sheetRef.current) return null;
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Font availability check is best-effort; capture regardless.
+    }
+    // html2canvas ignores object-fit:cover, so capture each poster's live box and
+    // natural size to rebuild the cover-crop manually inside the clone.
+    const livePosters = Array.from(sheetRef.current.querySelectorAll<HTMLImageElement>("img.midautumn-poster")).map((img) => ({
+      rect: img.getBoundingClientRect(),
+      naturalWidth: img.naturalWidth,
+      naturalHeight: img.naturalHeight,
+    }));
+    const canvas = await html2canvas(sheetRef.current, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: "#fffdfa",
+      logging: false,
+      onclone: (doc) => {
+        // html2canvas ignores box-shadow and mishandles the dotted radial-gradient strips;
+        // patch the cloned document with renderable equivalents.
+        const style = doc.createElement("style");
+        style.textContent = [
+          ".midautumn-sheet::before,.midautumn-sheet::after { background:none !important; height:3px; border-top:3px dotted #75bfc1; }",
+          ".midautumn-poster { box-shadow:none !important; border-right:3px solid #f0e2d7; border-bottom:3px solid #f0e2d7; }",
+          // html2canvas draws CJK text ~7px lower inside its line box than the browser;
+          // nudge the text back up with a no-layout relative offset so boxes keep the
+          // same height as the web view (icon margin compensation would inflate them).
+          ".midautumn-detail > span { display:flex !important; align-items:center; justify-content:center; }",
+          ".midautumn-detail > span svg { display:block; }",
+          ".midautumn-detail p { position:relative; top:-7px; }",
+        ].join("\n");
+        doc.head.appendChild(style);
+        // Rebuild object-fit:cover with an overflow-hidden wrapper sized to the live box.
+        const clonedPosters = Array.from(doc.querySelectorAll<HTMLImageElement>("img.midautumn-poster"));
+        clonedPosters.forEach((img, index) => {
+          const live = livePosters[index];
+          const boxWidth = live?.rect.width || 0;
+          const boxHeight = live?.rect.height || 0;
+          const naturalWidth = live?.naturalWidth || 0;
+          const naturalHeight = live?.naturalHeight || 0;
+          if (!boxWidth || !boxHeight || !naturalWidth || !naturalHeight) return;
+          const coverScale = Math.max(boxWidth / naturalWidth, boxHeight / naturalHeight);
+          const scaledWidth = naturalWidth * coverScale;
+          const scaledHeight = naturalHeight * coverScale;
+          const wrapper = doc.createElement("div");
+          wrapper.style.cssText = `position:relative;width:${boxWidth}px;height:${boxHeight}px;overflow:hidden;`;
+          img.style.cssText += `;position:absolute;left:${(boxWidth - scaledWidth) / 2}px;top:${(boxHeight - scaledHeight) / 2}px;width:${scaledWidth}px;height:${scaledHeight}px;max-width:none;object-fit:fill;`;
+          if (img.parentNode) {
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+          }
+        });
+      },
+    });
+    return canvas.toDataURL("image/png");
+  };
+
   const exportPage = async () => {
     if (!sheetRef.current || exporting) return;
     setExporting(true);
     try {
-      const canvas = await html2canvas(sheetRef.current, { scale: 3, useCORS: true, backgroundColor: "#fffdfa", logging: false });
+      const dataUrl = await captureSheet();
+      if (!dataUrl) return;
       const link = document.createElement("a");
       const filename = displayTitle.replace(/[\\/:*?"<>|]/g, "-").slice(0, 80);
       link.download = `${filename}-${String(page + 1).padStart(2, "0")}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.href = dataUrl;
       link.click();
     } finally {
+      setExporting(false);
+    }
+  };
+
+  const exportAllPages = async () => {
+    if (!sheetRef.current || exporting || activities.length === 0) return;
+    setExporting(true);
+    const restorePage = page;
+    try {
+      const pages = Math.ceil(activities.length / 3);
+      const filename = displayTitle.replace(/[\\/:*?"<>|]/g, "-").slice(0, 80);
+      for (let pageIndex = 0; pageIndex < pages; pageIndex++) {
+        setPage(pageIndex);
+        setActive(Math.min(activities.length - 1, pageIndex * 3));
+        // Wait for React to re-render the sheet with the next page before capturing.
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve(null))));
+        await new Promise((resolve) => setTimeout(resolve, 120));
+        const dataUrl = await captureSheet();
+        if (!dataUrl) continue;
+        const link = document.createElement("a");
+        link.download = `${filename}-${String(pageIndex + 1).padStart(2, "0")}.png`;
+        link.href = dataUrl;
+        link.click();
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+    } finally {
+      setPage(restorePage);
       setExporting(false);
     }
   };
@@ -262,15 +429,21 @@ export default function MidautumnPage() {
           <button className="midautumn-icon-button" type="button" onClick={resetActivities} title="恢复初始内容" aria-label="恢复初始内容"><RotateCcw size={15} /></button>
         </div>
 
+        <div className="midautumn-tabs" role="tablist">
+          {TABS.map((config) => (
+            <button key={config.key} type="button" role="tab" aria-selected={tab === config.key} className={`midautumn-tab${tab === config.key ? " is-active" : ""}`} onClick={() => setTab(config.key)}>{config.label}<span>{lists[config.key].length}</span></button>
+          ))}
+        </div>
+
         <div className="midautumn-toolbar">
           <button className="midautumn-command" type="button" onClick={addActivity}><Plus size={15} />新增活动</button>
-          <button className="midautumn-command is-primary" type="button" onClick={exportPage} disabled={exporting}><Download size={15} />{exporting ? "生成中" : "导出本页"}</button>
+          <button className="midautumn-command is-primary" type="button" onClick={exportAllPages} disabled={exporting}><Download size={15} />{exporting ? "生成中" : `导出全部（${totalPages} 页）`}</button>
         </div>
 
         <div className="midautumn-section-label"><span>页面设置</span><span>可编辑</span></div>
         <div className="midautumn-form midautumn-page-settings">
-          <label className="midautumn-field"><span>主标题</span><input value={pageTitle} onChange={(event) => setPageTitle(event.target.value)} placeholder={defaultTitle} /></label>
-          <label className="midautumn-field"><span>副标题</span><input value={pageSubtitle} onChange={(event) => setPageSubtitle(event.target.value)} placeholder={defaultSubtitle} /></label>
+          <label className="midautumn-field"><span>主标题</span><input value={pageTitle} onChange={(event) => setPageTitle(event.target.value)} placeholder={tabConfig.title} /></label>
+          <label className="midautumn-field"><span>副标题</span><input value={pageSubtitle} onChange={(event) => setPageSubtitle(event.target.value)} placeholder={tabConfig.subtitle} /></label>
         </div>
 
         <div className="midautumn-section-label"><span>活动列表</span><span>{activities.length} 条</span></div>
