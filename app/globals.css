@@ -252,3 +252,39 @@ button:disabled { cursor: not-allowed; }
 .candy-header,.midautumn-header { position:relative; z-index:4; width:min(100% - 48px,1160px); height:72px; padding:16px 0; }.candy-header::after,.midautumn-header::after { position:absolute; right:0; bottom:0; left:0; height:1px; background:rgba(209,240,240,.18); content:""; }.candy-wheel-page .brand-mark,.midautumn-brand-mark { color:#f0fbfa; }.candy-wheel-page .brand-mark span,.midautumn-brand-mark span { color:#91d1d5; }.candy-wheel-page .brand-mark strong,.midautumn-brand-mark strong { font-size:15px; }.candy-wheel-page .header-actions { gap:2px; }.candy-wheel-page .header-icon { width:36px; height:36px; border-radius:0; }.candy-wheel-page .header-icon:hover:not(:disabled) { transform:none; }
 .midautumn-app { color:#dbeff0; background:#041b2a; }.midautumn-header { width:calc(100% - 48px); max-width:none; margin:0 24px; }.midautumn-header-icon { color:#b7e1e3; }.midautumn-header-icon:hover { background:rgba(133,211,215,.14); color:#fff; transform:none; }.midautumn-brand-mark { color:#f0fbfa; }.midautumn-brand-mark span { color:#91d1d5; }.midautumn-editor { border-color:rgba(167,218,219,.18); background:#082333; }.midautumn-brand { padding-bottom:19px; border-bottom:1px solid rgba(167,218,219,.16); }.midautumn-brand h1 { color:#f0fbfa; font-weight:600; }.midautumn-brand p,.midautumn-section-label,.midautumn-event-choice > span:last-child > span,.midautumn-image-row > span { color:#8eafb6; }.midautumn-icon-button,.midautumn-command,.midautumn-file-button { border-color:rgba(171,220,221,.24); background:#0d3040; color:#d9f0ee; }.midautumn-icon-button:hover,.midautumn-command:hover,.midautumn-file-button:hover { background:#16485a; }.midautumn-command.is-primary,.midautumn-export { background:#bce9e6; color:#063545; }.midautumn-command.is-primary:hover,.midautumn-export:hover { background:#e2fbf8; }.midautumn-event-choice { border-color:rgba(167,218,219,.15); color:#cfe4e4; }.midautumn-event-choice.is-active { border-color:#83cfd1; background:#103d4d; }.midautumn-event-number { color:#85ced0; }.midautumn-field > span:first-child { color:#b7d6d6; }.midautumn-field input,.midautumn-field textarea { border-color:rgba(171,220,221,.21); background:#0b2a39; color:#eefbfa; }.midautumn-field input:focus,.midautumn-field textarea:focus { border-color:#85d3d3; box-shadow:0 0 0 2px rgba(126,210,210,.12); }.midautumn-danger { border-color:rgba(231,152,141,.36); background:rgba(96,35,35,.18); color:#f0b5ad; }.midautumn-workspace { background:radial-gradient(circle at 72% 18%,rgba(78,157,164,.16),transparent 30%),#061d2b; }.midautumn-topbar { color:#cce5e5; }.midautumn-page-nav { color:#b7d5d7; }.midautumn-page-nav button { border-color:rgba(173,221,221,.25); background:#103244; color:#d9f4f2; }.midautumn-sheet { box-shadow:0 28px 70px rgba(0,0,0,.36); }
 @media (max-width:760px) { .portal-nav { display:flex; }.portal-nav a { padding-left:13px; font-size:11px; }.portal-nav a + a { margin-left:13px; }.portal-brand small { display:none; }.candy-header,.midautumn-header { width:calc(100% - 32px); margin:0 16px; }.midautumn-app { grid-template-rows:66px auto minmax(0,1fr); }.midautumn-editor { background:#082333; }.midautumn-workspace { padding:18px 12px 34px; } }
+/* Table generator tool (03): light paper sheet with a Word-style blue-headed table. */
+/* Mirrors .midautumn-sheet: same 3:4 portrait ratio, same responsive width, so both tools look identical. */
+.tablex-sheet { position:relative; display:flex; flex-direction:column; width:min(720px,calc(100vw - 420px)); min-width:430px; aspect-ratio:3 / 4; overflow:hidden; padding:36px 36px 24px; background:#ffffff; color:#243044; box-shadow:0 20px 50px rgba(8,66,81,.18); }
+.tablex-sheet-head { text-align:center; }
+.tablex-sheet-head h2 { margin:0; color:#0f3d4d; font-family:"Noto Serif SC","Songti SC","STSong",serif; font-size:clamp(26px,3.6vw,38px); font-weight:900; line-height:1.15; }
+.tablex-sheet-head p { margin:12px 0 0; color:#3f616d; font-family:Georgia,"Noto Serif SC",serif; font-size:clamp(13px,1.6vw,17px); letter-spacing:1px; }
+.tablex-sheet-head > div { width:78%; height:1px; margin:16px auto 0; background:#574a43; opacity:.55; }
+.tablex-table-wrap { flex:1 1 auto; min-height:0; margin-top:20px; overflow:hidden; }
+.tablex-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:calc(clamp(11px,1.35vw,14px) * var(--tablex-fit,1)); line-height:1.5; }
+.tablex-table th { padding:calc(10px * var(--tablex-fit,1)) calc(8px * var(--tablex-fit,1)); border:1px solid #8f9bb8; color:#fff; font-weight:700; text-align:center; word-break:break-all; }
+.tablex-table td { padding:calc(8px * var(--tablex-fit,1)) calc(9px * var(--tablex-fit,1)); border:1px solid #aab2c5; color:#243044; word-break:break-word; }
+.tablex-foot { margin-top:18px; color:#55666d; font-size:clamp(9px,1.15vw,11px); text-align:center; }
+.tablex-inline-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:end; }
+.tablex-inline-fields input[type="color"] { width:100%; height:36px; padding:2px 3px; border:1px solid #d8ccc2; border-radius:4px; background:#fff; cursor:pointer; }
+.tablex-check-field { display:flex; align-items:center; gap:8px; height:36px; color:#b7d6d6; font-size:12px; font-weight:800; cursor:pointer; }
+.tablex-check-field input { width:15px; height:15px; margin:0; accent-color:#19728a; }
+.tablex-column-list { display:grid; gap:6px; }
+.tablex-column-row { display:grid; grid-template-columns:minmax(0,1fr) 58px 54px 30px; gap:6px; align-items:center; }
+.tablex-column-row input, .tablex-column-row select { min-width:0; height:34px; padding:0 7px; border:1px solid #d8ccc2; border-radius:4px; outline:none; background:#fff; color:#231d19; font-size:12px; }
+.tablex-column-row input:focus, .tablex-column-row select:focus { border-color:var(--midautumn-orange); }
+.tablex-column-row input[type="number"] { text-align:center; }
+.tablex-column-row > button { display:grid; place-items:center; width:30px; height:30px; border:1px solid #ddbdb3; border-radius:4px; background:#fff7f5; color:#a4412e; }
+.tablex-column-row > button:hover:not(:disabled) { background:#fcebe6; }
+.tablex-column-row > button:disabled { cursor:not-allowed; opacity:.4; }
+.tablex-add-column { width:100%; min-height:34px; margin-top:8px; display:flex; align-items:center; justify-content:center; gap:6px; border:1px dashed rgba(171,220,221,.34); border-radius:4px; background:transparent; color:#8fc9cd; font-size:12px; font-weight:700; letter-spacing:.5px; }
+.tablex-add-column:hover:not(:disabled) { transform:none; border-color:rgba(171,220,221,.62); background:rgba(171,220,221,.09); color:#c3e8e7; }
+.tablex-add-column:disabled { cursor:not-allowed; opacity:.5; }
+.tablex-add-column svg { opacity:.85; }
+.tablex-hint { margin:0; color:#8eafb6; font-size:12px; line-height:1.7; }
+/* The editor shell is themed dark; keep column controls consistent with it. */
+.midautumn-app .tablex-column-row input, .midautumn-app .tablex-column-row select { border-color:rgba(171,220,221,.21); background:#0b2a39; color:#eefbfa; }
+.midautumn-app .tablex-column-row > button { border-color:rgba(231,152,141,.36); background:rgba(96,35,35,.18); color:#f0b5ad; }
+@media (max-width:900px) { .tablex-sheet { width:min(760px,100%); min-width:0; padding:32px 22px 24px; } }
+@media (max-width:520px) { .tablex-sheet { padding:26px 12px 18px; } .tablex-table { font-size:11px; } .tablex-table th { padding:7px 5px; } .tablex-table td { padding:6px 5px; } }
+
+
