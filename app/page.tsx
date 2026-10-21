@@ -9,6 +9,7 @@ const tools = [
   { href: "/wheel", index: "01", title: "决策转盘", description: "把犹豫交给一次明确的转动。", label: "即刻开始" },
   { href: "/activity", index: "02", title: "活动海报", description: "把一场相聚，整理成值得分享的消息。", label: "开始编辑" },
   { href: "/table", index: "03", title: "表格生成器", description: "把杂乱的信息，排成一张能出图的表格。", label: "开始制表" },
+  { href: "/xhs", index: "04", title: "小红书一键发文", description: "随机生成一篇文案，带着它直接去发布。", label: "生成文案" },
 ];
 
 export default function Home() {

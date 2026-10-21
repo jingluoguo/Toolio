@@ -288,3 +288,43 @@ button:disabled { cursor: not-allowed; }
 @media (max-width:520px) { .tablex-sheet { padding:26px 12px 18px; } .tablex-table { font-size:11px; } .tablex-table th { padding:7px 5px; } .tablex-table td { padding:6px 5px; } }
 
 
+/* 小红书一键发文（扫码分享版） */
+.xhs-scan-page { min-height:100svh; display:grid; place-items:center; padding:34px 18px 52px; background:linear-gradient(180deg,#f8f5ef 0%,#f0e9df 100%); color:#2b2320; font-family:"Noto Sans SC","PingFang SC",sans-serif; }
+.xhs-scan-wrap { display:grid; gap:18px; width:min(480px,100%); }
+.xhs-scan-head { display:flex; align-items:center; gap:12px; }
+.xhs-scan-logo { display:grid; place-items:center; width:44px; height:44px; border-radius:50%; background:#fff; box-shadow:0 4px 14px rgba(90,70,50,.10); font-size:20px; }
+.xhs-scan-head strong { display:block; font-family:"Noto Serif SC",serif; font-size:16px; }
+.xhs-scan-head span { color:#8d7f74; font-size:11px; letter-spacing:.08em; }
+.xhs-scan-title { margin:6px 0 0; font-family:"Noto Serif SC",serif; font-size:30px; font-weight:700; line-height:1.32; }
+.xhs-note-card { padding:22px 20px 18px; border-radius:14px; background:#fff; box-shadow:0 12px 30px rgba(70,50,38,.10); }
+.xhs-note-card h2 { margin:0 0 12px; font-size:17px; font-weight:800; line-height:1.45; }
+.xhs-note-body p { margin:0; min-height:1.2em; color:#3d3430; font-size:14px; line-height:1.85; white-space:pre-wrap; }
+.xhs-note-tags { margin:14px 0 0; color:#13386c; font-size:13px; line-height:1.9; overflow-wrap:anywhere; }
+.xhs-big-cta { display:grid; place-items:center; gap:4px; padding:17px 20px 15px; border:0; border-radius:14px; background:#ff2442; color:#fff; box-shadow:0 12px 26px rgba(255,36,66,.26); transition:transform .18s, background .18s; }
+.xhs-big-cta > span { display:flex; align-items:center; gap:9px; font-size:17px; font-weight:800; }
+.xhs-big-cta small { font-size:11px; opacity:.85; }
+.xhs-big-cta:hover { transform:translateY(-2px); background:#ee1c37; }
+.xhs-scan-side { display:flex; justify-content:center; }
+.xhs-swap { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:1px solid #ddd0c4; border-radius:99px; background:#fff; color:#7a6b62; font-size:12px; font-weight:700; }
+.xhs-swap:hover { background:#f6efe9; }
+.xhs-scan-note { padding:12px 14px; border:1px solid #e6dbcf; border-radius:10px; background:#fffdf9; color:#7a6b62; font-size:12px; line-height:1.75; }
+.xhs-scan-note.is-error { border-color:#e2b9b0; background:#fff6f3; color:#a4412e; }
+.xhs-scan-note-ok { display:inline-flex; align-items:center; gap:6px; color:#2c7a58; font-weight:700; }
+.xhs-scan-note a { color:#c2451d; }
+.xhs-scan-foot { display:flex; justify-content:space-between; gap:8px; color:#a3927f; font-family:"DM Mono",monospace; font-size:10px; }
+.xhs-scan-tiny { margin:0; color:#b0a294; font-size:11px; text-align:center; }
+.xhs-scan-tiny a { color:#a5826c; }
+
+/* 手机端唤起与微信引导 */
+.xhs-scan-page { padding-bottom:calc(52px + env(safe-area-inset-bottom)); }
+.xhs-big-cta.is-loading { opacity:.86; cursor:progress; }
+.xhs-fallback { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.xhs-fallback-btn { display:flex; align-items:center; justify-content:center; gap:5px; padding:9px 6px; border:1px solid #ddd0c4; border-radius:8px; background:#fff; color:#6f5d52; font-size:12px; font-weight:700; text-decoration:none; }
+.xhs-fallback-btn:hover { background:#f6efe9; }
+.xhs-wechat-mask { position:fixed; inset:0; z-index:60; display:grid; align-content:start; justify-items:center; padding:14px 20px; background:rgba(28,22,18,.82); backdrop-filter:blur(3px); }
+.xhs-wechat-arrow { justify-self:end; margin:4px 26px 10px 0; color:#fff; font-size:36px; line-height:1; }
+.xhs-wechat-box { width:min(360px,100%); padding:18px 18px 16px; border-radius:14px; background:#fffdf9; box-shadow:0 20px 50px rgba(0,0,0,.3); }
+.xhs-wechat-box strong { display:block; margin-bottom:8px; color:#2b2320; font-size:15px; }
+.xhs-wechat-box p { margin:0 0 8px; color:#6a5c52; font-size:13px; line-height:1.75; }
+.xhs-wechat-box .xhs-wechat-tip { color:#a3927f; font-size:12px; }
+.xhs-wechat-box button { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin-top:12px; padding:10px; border:0; border-radius:8px; background:#ff2442; color:#fff; font-size:13px; font-weight:800; }
