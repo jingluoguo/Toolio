@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Check, Download, ExternalLink, RefreshCw, Send, Share } from "lucide-react";
-import { NOTES, type Note, noteToText, pickNote } from "./copybank";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Check, Copy, Download, ExternalLink, RefreshCw, Send, Share } from "lucide-react";
+import { NOTES, type Note, hashTags, noteContentToText, noteTitleToText, pickNote } from "./copybank";
 import {
   DEFAULT_ENV,
   type Env,
@@ -22,10 +22,15 @@ export default function XhsPage() {
   // 环境同样要挂载后再检测，保证首屏 HTML 一致
   const [env, setEnv] = useState<Env | null>(null);
   const [status, setStatus] = useState<Status>("idle");
+  const [titleCopied, setTitleCopied] = useState(false);
+  const titleTimer = useRef<number | null>(null);
 
   useEffect(() => {
     setNote(pickNote());
     setEnv(detectEnv());
+    return () => {
+      if (titleTimer.current) window.clearTimeout(titleTimer.current);
+    };
   }, []);
 
   const swap = useCallback(() => {
@@ -34,10 +39,21 @@ export default function XhsPage() {
       return next.id === current.id ? pickNote() : next;
     });
     setStatus("idle");
+    setTitleCopied(false);
+    if (titleTimer.current) window.clearTimeout(titleTimer.current);
   }, []);
 
+  // 标题单独复制，只带纯标题，粘进小红书标题框即可
+  const copyTitle = useCallback(async () => {
+    const ok = await copyText(noteTitleToText(note));
+    setTitleCopied(ok);
+    if (titleTimer.current) window.clearTimeout(titleTimer.current);
+    titleTimer.current = window.setTimeout(() => setTitleCopied(false), 1800);
+  }, [note]);
+
   const publish = useCallback(async () => {
-    const text = noteToText(note);
+    // 只带正文 + 话题，标题由上方单独的复制按钮处理
+    const text = noteContentToText(note);
     const envNow = env ?? detectEnv();
 
     // 微信内置浏览器会拦截 scheme，只能引导用户去浏览器打开
@@ -78,14 +94,11 @@ export default function XhsPage() {
     }, 2200);
   }, [env, note]);
 
+  // 这个页面是扫码进来的，主场景就是手机端：env 未检测出来时（首屏）也按移动端给文案
   const ctaMain =
-    status === "opening" ? "正在打开小红书…" : env?.isMobile ? "复制文案并打开小红书" : "一键发布到小红书";
-  const ctaSub =
-    status === "opening"
-      ? "文案已复制，稍候在发布页粘贴"
-      : env?.isMobile
-        ? "自动复制文案，并拉起小红书 App"
-        : "自动复制文案，并打开发布页";
+    status === "opening" ? "正在打开小红书…" : env && !env.isMobile ? "一键发布到小红书" : "复制正文并打开小红书";
+  // 唤起用的是 xhsdiscover://post，进 App 就直接落在发布页，不用再让用户自己点「+」
+  const idleHint = "正文（含话题）会自动复制到剪贴板，在正文框长按粘贴；标题点标题右边的复制按钮。";
 
   return (
     <main className="xhs-scan-page">
@@ -99,17 +112,47 @@ export default function XhsPage() {
         </header>
 
         <h1 className="xhs-scan-title">
-          点一下，<br />把这篇笔记发到小红书
+          点一下，<br />把这篇笔记发到<em>小红书</em>
         </h1>
 
-        <article className="xhs-note-card">
-          <h2>{note.title}</h2>
+        <article className="xhs-note-card" key={note.id}>
+          <div className="xhs-note-top">
+            <i className="xhs-note-dot" aria-hidden="true" />
+            <span>笔记预览</span>
+            <button type="button" className="xhs-swap" onClick={swap}>
+              <RefreshCw size={12} />换一篇
+            </button>
+          </div>
+          <div className="xhs-note-title-row">
+            <h2>{note.title}</h2>
+            <button
+              type="button"
+              className={`xhs-copy-title${titleCopied ? " is-done" : ""}`}
+              onClick={copyTitle}
+              aria-label="复制标题"
+            >
+              {titleCopied ? <Check size={13} /> : <Copy size={13} />}
+              {titleCopied ? "已复制" : "复制标题"}
+            </button>
+          </div>
           <div className="xhs-note-body">
             {note.body.split("\n").map((line, index) => (
               <p key={index}>{line || " "}</p>
             ))}
           </div>
-          <p className="xhs-note-tags">{note.tags.join(" ")}</p>
+          <ul className="xhs-note-tags">
+            {hashTags(note.tags).map((tag) => (
+              <li key={tag}>{tag}</li>
+            ))}
+          </ul>
+          <div className="xhs-note-foot">
+            <span>
+              正文 <b>{note.body.replace(/\s/g, "").length}</b> 字
+            </span>
+            <span>
+              话题 <b>{note.tags.length}</b> 个 · 复制即带 #
+            </span>
+          </div>
         </article>
 
         <button
@@ -118,39 +161,29 @@ export default function XhsPage() {
           onClick={publish}
           disabled={status === "opening"}
         >
-          <Send size={20} />
-          <span>{ctaMain}</span>
-          <small>{ctaSub}</small>
+          <span>
+            <Send size={16} />
+            {ctaMain}
+          </span>
         </button>
 
-        <div className="xhs-scan-side">
-          <button type="button" className="xhs-swap" onClick={swap}>
-            <RefreshCw size={13} />换一篇
-          </button>
-        </div>
-
         <div className={`xhs-scan-note${status === "failed" || status === "notOpened" ? " is-error" : ""}`}>
-          {status === "idle" && (
-            <span>
-              文案会自动复制到剪贴板。打开小红书后点「+」发布笔记，
-              在正文框长按粘贴（⌘/Ctrl + V）即可。
-            </span>
-          )}
+          {status === "idle" && <span>{idleHint}</span>}
           {status === "opening" && <span>正在唤起小红书，如果没有跳转，稍等两秒会给出下载入口。</span>}
           {status === "copied" && (
             <span className="xhs-scan-note-ok">
-              <Check size={14} />文案已复制，在小红书里粘贴就能发。
+              <Check size={14} />正文已复制，在小红书正文框里粘贴就能发。
             </span>
           )}
           {status === "blocked" && (
             <span>
-              浏览器拦住了新窗口，文案已经复制好了。
+              浏览器拦住了新窗口，正文已经复制好了。
               <a href={XHS_WEB_PUBLISH} target="_blank" rel="noopener noreferrer">手动打开发布页</a>
             </span>
           )}
           {status === "failed" && (
             <span>
-              复制失败了，请长按上方文案手动复制，再
+              复制失败了，请长按上方正文手动复制，再
               <a href={XHS_WEB_PUBLISH} target="_blank" rel="noopener noreferrer">打开发布页</a>。
             </span>
           )}
@@ -171,11 +204,6 @@ export default function XhsPage() {
           </div>
         )}
 
-        <footer className="xhs-scan-foot">
-          <span>01 · 文案自动复制</span>
-          <span>02 · 打开小红书粘贴</span>
-          <span>03 · 配上美图发布</span>
-        </footer>
         <p className="xhs-scan-tiny">
           网页版入口：<a href={XHS_CREATOR} target="_blank" rel="noopener noreferrer">小红书创作中心</a>
         </p>
@@ -187,11 +215,11 @@ export default function XhsPage() {
           <div className="xhs-wechat-box">
             <strong>微信里打不开小红书 App</strong>
             <p>
-              文案已经复制好了。点右上角 <b>···</b>，选择「在浏览器打开」，
-              再点一次「复制文案并打开小红书」就能直接拉起来。
+              正文已经复制好了。点右上角 <b>···</b>，选择「在浏览器打开」，
+              再点一次「复制正文并打开小红书」就能直接拉起来。
             </p>
             <p className="xhs-wechat-tip">
-              如果没复制成功，回到页面长按文案手动复制即可。
+              如果没复制成功，回到页面长按正文手动复制，标题用标题旁的复制按钮。
             </p>
             <button type="button" onClick={() => setStatus("idle")}>
               <Share size={14} />我知道了

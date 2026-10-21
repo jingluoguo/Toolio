@@ -410,6 +410,29 @@ const pick = <T,>(list: T[]): T => list[Math.floor(Math.random() * list.length)]
 
 export const pickNote = (): Note => pick(NOTES);
 
+/**
+ * 统一给话题加上 # 号。
+ * 小红书只有 `#话题` 才会被识别成可点击的话题标签，纯文字无效，
+ * 所以渲染和复制两条链路都必须走这里，避免哪边漏掉 #。
+ */
+export const hashTags = (tags: string[]): string[] =>
+  tags.map((tag) => (tag.startsWith("#") ? tag : `#${tag}`));
+
+/**
+ * 复制进剪贴板的内容：正文 + #话题（话题之间用空格隔开，方便小红书逐个识别）。
+ * 小红书的标题和正文是两个独立输入框，所以这里刻意不带标题，
+ * 避免粘贴进正文框时多出一行标题。
+ */
+export function noteContentToText(note: Note): string {
+  return [note.body, "", hashTags(note.tags).join(" ")].join("\n");
+}
+
+/** 标题单独复制：小红书标题框有字数限制，只给纯标题，不带正文和话题 */
+export function noteTitleToText(note: Note): string {
+  return note.title;
+}
+
+/** 完整成稿（标题 + 正文 + 话题），保留给需要一次性复制的场景 */
 export function noteToText(note: Note): string {
-  return [note.title, "", note.body, "", note.tags.join(" ")].join("\n");
+  return [note.title, "", note.body, "", hashTags(note.tags).join(" ")].join("\n");
 }
