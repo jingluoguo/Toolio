@@ -106,7 +106,7 @@ export default function XhsPage() {
         <header className="xhs-scan-head">
           <span className="xhs-scan-logo" aria-hidden="true">🌿</span>
           <div>
-            <strong>汉方药妆</strong>
+            <strong>漢方樂妝</strong>
             <span>草本美学 · 一键分享</span>
           </div>
         </header>
