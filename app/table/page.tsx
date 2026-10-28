@@ -8,18 +8,21 @@ import {
   ChevronRight,
   Download,
   Plus,
+  ListPlus,
   RotateCcw,
   X,
 } from "lucide-react";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const storageKey = "toolio-table-editor-v3";
+const storageKey = "toolio-table-editor-v5";
 
 type Align = "left" | "center" | "right";
 
 type Column = { id: string; name: string; weight: number; align: Align };
 
-type Row = { id: string; cells: string[] };
+type Row = { id: string; kind?: "row" | "group"; label?: string; cells: string[] };
+
+type SeedItem = { group: string } | { cells: string[] };
 
 type TableState = {
   title: string;
@@ -34,58 +37,60 @@ type TableState = {
 
 const SEED_COLUMNS: Column[] = [
   { id: "col-1", name: "序号", weight: 7, align: "center" },
-  { id: "col-2", name: "山名", weight: 21, align: "center" },
-  { id: "col-3", name: "门票", weight: 15, align: "center" },
-  { id: "col-4", name: "登山时间", weight: 12, align: "center" },
-  { id: "col-5", name: "特色", weight: 45, align: "left" },
+  { id: "col-2", name: "书店", weight: 21, align: "center" },
+  { id: "col-3", name: "位置", weight: 22, align: "left" },
+  { id: "col-4", name: "特点", weight: 32, align: "left" },
+  { id: "col-5", name: "日期", weight: 9, align: "center" },
+  { id: "col-6", name: "照片", weight: 9, align: "center" },
 ];
 
-// 杭州秋日可以爬的山（44 条路线），作为初始示例数据，可自由编辑或清空。
-const SEED_ROWS: string[][] = [
-  ["1", "天马山", "免费", "约 1h", "滨江近郊，山体平缓，适合日常遛弯入门"],
-  ["2", "贵人峰", "免费", "约 1h", "九溪旁小山，俯瞰钱塘江与茶园，轻松出片"],
-  ["3", "小和山", "免费", "约 1h", "市区近郊，高校旁小山，适合散步爬山"],
-  ["4", "超山", "40 元", "约 1.5h", "以梅花闻名，奇石，可眺望塘栖平原风光"],
-  ["5", "云栖竹径万木草堂线", "8 元", "约 1.5h", "竹海秘境，古木参天，清凉治愈出片"],
-  ["6", "大石佛院（将台山）", "免费", "约 1.5h", "西湖摩崖大佛，吴越古迹，山林清幽适合访古"],
-  ["7", "老和山", "免费", "约 1.2h", "浙大后山，平缓山脊，观西湖与校园城市景色"],
-  ["8", "湘湖老虎洞山", "免费", "约 1.2h", "湘湖旁窑文化遗址，登顶俯瞰湘湖，步道平缓"],
-  ["9", "大雄山（良渚）", "免费", "约 1.2h", "良渚秘境，低难度野路竹林，亲子友好人少清净"],
-  ["10", "灵隐飞来峰", "45 元", "约 1.2h", "千年石刻石窟，人文浓厚，短途登山游览"],
-  ["11", "径山古道 — 径山寺", "径山寺 20 元", "约 1.5h", "秋日竹林光影绝美"],
-  ["12", "鹰嘴崖小环线", "免费", "约 1h", "俯瞰法喜寺、龙井茶园，禅意浓厚可祈福"],
-  ["13", "南高峰", "免费", "约 1.8h", "西湖十景双峰插云，溶洞古迹，人少静谧"],
-  ["14", "西山森林公园（富阳）", "免费", "约 1.8h", "平缓森林步道，溪流潺潺，新手友好适合避暑"],
-  ["15", "东明山", "免费", "约 2h", "森林公园松林成片，人少适合休闲徒步"],
-  ["16", "龙门山（富阳）", "免费", "约 2h", "龙门古镇旁，怪石山野小路，山水人文兼具"],
-  ["17", "龙坞白岩山", "免费", "约 2h", "龙坞茶镇，满山茶园，平缓山道观赏茶田"],
-  ["18", "甘岭水库长乐林场", "免费", "约 2h", "水库森林，红杉水杉，秋日氛围感强"],
-  ["19", "北高峰", "免费（灵隐寺另购票）", "约 2h", "可眺望西湖、西溪、城西天际线、钱塘江远景"],
-  ["20", "豆腐皮古道小环线", "免费", "约 2h", "大洋坞水库➡️东庵遗址➡️大德岭➡️飞凤岩➡️鉴远亭➡️大洋坞水库"],
-  ["21", "康门水库环线", "免费", "约 2h", "康门水库停车场➡️大坝➡️良渚天梯➡️山脊观景台➡️竹林步道➡️康门水库停车场"],
-  ["22", "宝石山", "免费", "约 2.5h", "俯瞰西湖全景，日出日落景观绝佳"],
-  ["23", "午潮山", "免费", "约 2.5h", "原始森林溪流瀑布，野趣足，高负氧离子，可走小环线"],
-  ["24", "王位山", "免费", "约 2.8h", "高山草甸云海机位，秋季红杉景观美，爬升偏大"],
-  ["25", "吴山", "免费（城隍阁 30 元）", "约 3h", "网红绿野仙踪，拍照出片效果佳"],
-  ["26", "如意尖", "免费", "约 3h", "杭州城西最高峰，群山连绵，适合进阶徒步"],
-  ["27", "马岭古道", "免费", "约 3h", "古村人文浓厚，雨后光影佳，可下水踩水"],
-  ["28", "鸬鸟山", "免费", "约 3h", "高山草甸，山顶芦苇花海，视野辽阔"],
-  ["29", "玉皇山", "10 元（16:30 后免票）", "约 3.5h", "新西湖十景玉皇飞云所在地，八卦田绝佳俯瞰点"],
-  ["30", "杏梅尖", "免费", "约 3.5h", "富阳最高峰，原始山林大瀑布，硬核徒步"],
-  ["31", "十里琅珰（五云山→梅家坞）", "免费", "约 2.5h", "经典山脊徒步线，层层茶园，杭州徒步标杆"],
-  ["32", "上香古道南高峰环线", "免费", "约 2.5h", "六通宾馆➡️南高峰➡️五老峰➡️双峰村➡️三台阁➡️茅家埠上香古道➡️六通宾馆"],
-  ["33", "龙坞白岩山茶园环线", "免费", "约 2.5h", "龙坞茶镇➡️白岩山➡️茶园山脊➡️光明寺水库➡️何家村➡️龙坞茶镇"],
-  ["34", "云栖十里琅珰环线", "8 元", "约 3h", "云栖竹径➡️真迹寺➡️十里琅珰➡️梅家坞➡️三分岔➡️云栖竹径"],
-  ["35", "玉皇山", "10 元（16:30 后免票）", "约 3.5h", "新西湖十景玉皇飞云所在地，八卦田绝佳俯瞰点"],
-  ["36", "如意尖环线", "免费", "约 3.5h", "双灵村➡️如意尖山顶➡️狗头山➡️野山头➡️板壁山水库➡️双灵村"],
-  ["37", "杏梅尖", "免费", "约 3.5h", "富阳最高峰，原始山林大瀑布，硬核徒步，体力要求高"],
-  ["38", "九溪环线", "免费", "约 4h", "一次打卡江边、溪谷瀑布、古寺茶园、山脊，新手友好"],
-  ["39", "凤凰山", "免费", "约 4h", "栖云古刹清幽，藏有南宋老虎洞官窑遗址"],
-  ["40", "鸬鸟山罗窑坞环线", "免费", "约 4h", "罗窑坞➡️鸬鸟山顶爱心天梯➡️泗溪古道➡️罗窑坞"],
-  ["41", "富阳横坑坞环线", "免费", "约 4.5h", "横坑村➡️万年石浪➡️峭壁山脊➡️粽叶林➡️溪谷涉水路段➡️横坑村"],
-  ["42", "小猪线", "免费", "约 5h", "吴山广场 D 口➡️城隍阁➡️十二生肖石➡️江湖汇观亭➡️绿野仙踪➡️白蛇飞渡桥➡️和孚精舍➡️凤凰山➡️老玉皇宫➡️八卦田➡️紫来洞➡️月宝亭➡️九曜阁➡️南屏山➡️学士桥➡️吴山广场"],
-  ["43", "西湖爱心线", "免费", "约 6h", "龙翔桥➡️湖滨➡️宝石山➡️青芝坞➡️灵峰山➡️灵隐外围➡️满觉陇➡️九曜山➡️雷峰塔➡️长桥➡️龙翔桥"],
-  ["44", "六和塔-虎跑", "免费", "约 2h", "六和塔 → 二龙山 → 虎跑后山 → 虎跑梦泉 → 虎跑雕像 → 虎跑山"],
+// 杭州值得逛的独立书店（39 家，按行政区分组），group 项渲染为通栏分组行，可自由编辑或清空。
+const SEED_ITEMS: SeedItem[] = [
+  { group: "西湖区 · 共 13 家" },
+  { cells: ["1", "茑屋书店（天目里店）", "天目里2-4号楼", "日系选品，艺术画册和文创很强", "", ""] },
+  { cells: ["2", "西溪·果麦书店", "西溪湿地福堤北端（近北门）", "临水而建的白盒子建筑，馆藏2万余册，设月光影院、诗歌留言墙", "", ""] },
+  { cells: ["3", "麦家理想谷", "文二西路683号西溪文创园11栋", "作家麦家的公益书房，经典藏书，咖啡茶免费自取，周一闭馆", "", ""] },
+  { cells: ["4", "纯真年代书吧", "保俶塔前山路8号（宝石山腰）", "杭州早期书吧，坐拥西湖全景，文学沙龙名店，9:00-22:00", "", ""] },
+  { cells: ["5", "晓风书屋（北山街店）", "北山路56号（新新饭店旁）", "陪伴杭州30年的最老牌民营书店，历史最悠久的门店之一", "", ""] },
+  { cells: ["6", "晓风书屋（丝绸博物馆店）", "玉皇山路73号中国丝绸博物馆内", "书籍+文创+咖啡一体的博物馆系书店，陈列精致", "", ""] },
+  { cells: ["7", "阅见西湖", "曙光路184号", "原西湖区文化馆改造，晓风书屋运营，约2500㎡复合文化空间，讲座展览密集", "", ""] },
+  { cells: ["8", "浙江书房", "葛岭路1号（北山街）", "民国风建筑（智果禅寺遗址），藏书+茶室+小院，闹中取静", "", ""] },
+  { cells: ["9", "会饮书店", "三墩镇宝嘉誉府8幢109", "人文社科书店，卖书也卖酒，店名取自柏拉图《会饮》，周四店休", "", ""] },
+  { cells: ["10", "乐园书店", "留和路东信和创园64幢2F", "旧书店，让被时代冲刷掉的旧纸重新发光，10:00-22:00", "", ""] },
+  { cells: ["11", "尤利西斯书店", "公元里5幢二层", "严肃文学书店，曾只卖《尤利西斯》一种书，现主营西方现代主义文学", "", ""] },
+  { cells: ["12", "不熟艺术书店", "之江文化中心B1", "策展型艺术书店，主营艺术、设计、摄影类及青年艺术家衍生品", "", ""] },
+  { cells: ["13", "乌托邦书店（西投银泰店）", "西投银泰城2L", "浙江本土独立书店分店，人文社科与珍藏本，10:00-22:00", "", ""] },
+  { group: "拱墅区 · 共 7 家" },
+  { cells: ["14", "单向空间（远洋乐堤港店）", "丽水路58号远洋乐堤港二期1-3F", "许知远联合创立，设畅销榜与滞销榜，文化沙龙丰富，10:00-22:00", "", ""] },
+  { cells: ["15", "我的精神家园·王小波书店", "延安路468号1号楼1楼", "王小波主题书店，王小波作品与爱读之书齐备，10:00-22:00", "", ""] },
+  { cells: ["16", "晓风书屋（桥西直街店）", "小河路桥西直街30号", "运河畔老牌门店，与南派三书相邻，盗墓文化氛围浓厚，9:00-21:00", "", ""] },
+  { cells: ["17", "风雨书店", "狮虎桥路26号", "温暖系二手书店，处处细节，1/2号线凤起路可达", "", ""] },
+  { cells: ["18", "再见城市", "小河东河下66-7号", "小河直街旧书店，民国旧书旧物古着，重现昨日摩登，周二店休", "", ""] },
+  { cells: ["19", "乌托邦书店（孩儿巷店）", "孩儿巷109号", "人文社科、艺术设计与生活美学精选，2016年创立的本土品牌", "", ""] },
+  { cells: ["20", "大兜商店", "经纬天地创意园1A3三楼321室", "风格化艺术商店，小众杂志、艺术书籍、黑胶唱片与中古好物", "", ""] },
+  { group: "上城区 · 共 7 家" },
+  { cells: ["21", "南宋书房", "中山中路6号（鼓楼旁）", "宋韵主题复合书店，青砖黑瓦+玻璃台阶，南宋邮局可寄明信片", "", ""] },
+  { cells: ["22", "牡蛎书店", "海月路18号", "城南文学小书店，铁路山与钱塘江之间，选品见主理人品味，周二闭店", "", ""] },
+  { cells: ["23", "梦蝶书店", "抚宁巷9号-5", "二手书+黑胶唱片+一架子蝴蝶标本的小小书店，周二店休", "", ""] },
+  { cells: ["24", "大五书店", "凤山路79号2幢8号", "电影主题旧书店，咖啡以电影命名，店猫叫阿飞，13:00-24:00", "", ""] },
+  { cells: ["25", "南山书屋", "南山路210号", "毗邻中国美院的民国别墅书屋，美术、绘画、摄影类为主，9:30-20:00", "", ""] },
+  { cells: ["26", "乌托邦书店（延安路店）", "延安路297-1号", "精选人文社科与艺术设计图书的本土独立书店", "", ""] },
+  { cells: ["27", "庆春路购书中心", "庆春路217号", "杭州新华书店旗舰书城，大型综合购书点，教辅文艺齐全", "", ""] },
+  { group: "滨江区 · 共 4 家" },
+  { cells: ["28", "钟书阁", "星光国际广场4栋2层", "号称杭州最美书店，镜面天花板魔法空间，童趣书架适合亲子", "", ""] },
+  { cells: ["29", "爱读客二手书店", "储仓快杰大楼4层4051", "400㎡仓储式二手书店，藏书超10万册，无分类适合淘书", "", ""] },
+  { cells: ["30", "OPEN the DOOR", "CC流量谷C102", "设计感艺术书店，艺术书+咖啡+放映厅+唱片试听，11:00-19:00", "", ""] },
+  { cells: ["31", "风雨喫茶", "保利天汇1055c", "以漫画为核心的纸漫王国，借阅+手办周边综合体验，10:00-22:00", "", ""] },
+  { group: "萧山区 · 共 2 家" },
+  { cells: ["32", "普通读者书店", "市心北路归谷国际中心1楼", "复古绿色调的人文书店，文史社科选品有品味，活动口碑好，10:00-22:00", "", ""] },
+  { cells: ["33", "光画堂（1908阅览室）", "江寺公园西北角", "公益性摄影图书馆，2500余册专业摄影书免费开放，需预约，周三至周日", "", ""] },
+  { group: "余杭区 · 共 6 家" },
+  { cells: ["34", "单向空间（良渚大谷仓店）", "良渚街道玉鸟集1-101", "清水混凝土大谷仓，良渚的小镇客厅，可开合屋脊引自然光，10:00-21:00", "", ""] },
+  { cells: ["35", "小风光书店", "亲橙里购物中心商业街", "铁皮集装箱改建的在地人文书店，关注实际问题与人的境况", "", ""] },
+  { cells: ["36", "鲍贝书屋", "问溪路99号", "200年历史清代徽派古建筑中的书屋，古建筑博物馆群一景，9:30-21:30", "", ""] },
+  { cells: ["37", "晓风书屋（求是合集）", "仓前龙舟北路76号浙大校友企业总部经济园", "选品丰富偏商业与流行，二楼画作与历代绘画大系，近梦想小镇", "", ""] },
+  { cells: ["38", "猫的天空之城（梦想小镇店）", "仓前梦想小镇创业大街29栋", "文创+明信片概念书店，高挑玻璃建筑门前是油菜花田", "", ""] },
+  { cells: ["39", "西溪北苑新华书店（文字里）", "五常街道西溪北苑1幢102室", "临街社区书店，余杭余阅书吧，免费阅览自习+自助借还", "", ""] },
 ];
 
 function makeId(index = 0) {
@@ -95,14 +100,18 @@ function makeId(index = 0) {
 
 function defaultState(): TableState {
   return {
-    title: "杭州秋日可以爬的山",
-    subtitle: "44 条路线 · 按用时与体力递增",
-    footnote: "信息仅供参考，出行前请以景区最新公告为准",
-    headerColor: "#5b79b4",
+    title: "杭州书店地图",
+    subtitle: "39 家独立书店 · 按区域打卡",
+    footnote: "营业时间随门店调整，出行前建议先确认",
+    headerColor: "#1f5fa8",
     zebra: false,
-    pageSize: 14,
+    pageSize: 10,
     columns: SEED_COLUMNS.map((column) => ({ ...column })),
-    rows: SEED_ROWS.map((cells, index) => ({ id: makeId(index), cells: [...cells] })),
+    rows: SEED_ITEMS.map((item, index): Row =>
+      "group" in item
+        ? { id: makeId(index), kind: "group", label: item.group, cells: [] }
+        : { id: makeId(index), cells: [...item.cells] },
+    ),
   };
 }
 
@@ -117,10 +126,15 @@ function normalizeState(value: Partial<TableState>): TableState {
       }))
     : fallback.columns;
   const rows = Array.isArray(value.rows)
-    ? value.rows.map((row, index): Row => ({
-        id: row?.id || makeId(index),
-        cells: columns.map((_, cellIndex) => String(row?.cells?.[cellIndex] ?? "")),
-      }))
+    ? value.rows.map((row, index): Row => {
+        const isGroup = row?.kind === "group";
+        return {
+          id: row?.id || makeId(index),
+          kind: isGroup ? "group" : "row",
+          label: isGroup ? String(row?.label ?? "") : undefined,
+          cells: isGroup ? [] : columns.map((_, cellIndex) => String(row?.cells?.[cellIndex] ?? "")),
+        };
+      })
     : fallback.rows;
   return {
     title: typeof value.title === "string" ? value.title : fallback.title,
@@ -132,6 +146,65 @@ function normalizeState(value: Partial<TableState>): TableState {
     columns,
     rows,
   };
+}
+
+// Every cell renders its text through this block so the vertical padding can live
+// here instead of on the cell itself (see .tablex-cell in globals.css).
+const CELL_CLASS = "tablex-cell";
+
+const BASELINE_SAMPLE = "国Hg";
+const BLANK_GIF = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+// html2canvas derives the glyph baseline from a hidden inline probe
+// (img.offsetTop - span.offsetTop + 2). In this layout that number overshoots the
+// font's own ascent by roughly half a line, so every run of text lands lower in
+// the exported PNG than in the live sheet — inside short table cells it reads as
+// "not vertically centered". Both numbers are measurable, so the clone can cancel
+// the gap exactly instead of guessing a constant.
+function baselineOvershoot(doc: Document, fontFamily: string, fontSize: string) {
+  const holder = doc.createElement("div");
+  holder.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap;margin:0;padding:0;";
+  holder.style.fontFamily = fontFamily;
+  holder.style.fontSize = fontSize;
+  const probe = doc.createElement("span");
+  probe.style.cssText = "margin:0;padding:0;";
+  probe.textContent = "Hidden Text";
+  const marker = doc.createElement("img");
+  marker.src = BLANK_GIF;
+  marker.width = 1;
+  marker.height = 1;
+  marker.style.cssText = "margin:0;padding:0;vertical-align:baseline;";
+  holder.append(probe, marker);
+  doc.body.appendChild(holder);
+  const baseline = marker.offsetTop - probe.offsetTop + 2;
+  holder.remove();
+
+  const ctx = doc.createElement("canvas").getContext("2d");
+  if (!ctx) return 0;
+  ctx.font = `${fontSize} ${fontFamily}`;
+  const ascent = ctx.measureText(BASELINE_SAMPLE).fontBoundingBoxAscent;
+  return Number.isFinite(ascent) ? baseline - ascent : 0;
+}
+
+// A relative `top` moves the paint only, so row heights and cell borders stay
+// exactly where the browser laid them out.
+function liftTextIntoPlace(doc: Document, root: Element) {
+  const targets = [
+    ...root.querySelectorAll<HTMLElement>(".tablex-sheet-head h2, .tablex-sheet-head p, .tablex-foot"),
+    ...root.querySelectorAll<HTMLElement>(`.tablex-table .${CELL_CLASS}`),
+  ];
+  const view = doc.defaultView;
+  if (!view) return;
+  const measured = new Map<string, number>();
+  targets.forEach((node) => {
+    const styles = view.getComputedStyle(node);
+    const key = `${styles.fontFamily}|${styles.fontSize}`;
+    if (!measured.has(key)) measured.set(key, baselineOvershoot(doc, styles.fontFamily, styles.fontSize));
+    const shift = measured.get(key) ?? 0;
+    if (shift <= 0.5) return;
+    node.style.position = "relative";
+    node.style.top = `${-shift}px`;
+  });
 }
 
 export default function TablePage() {
@@ -241,6 +314,13 @@ export default function TablePage() {
     setPage(Math.floor(nextIndex / pageSize));
   };
 
+  const addGroup = () => {
+    const nextIndex = rows.length;
+    setState((prev) => ({ ...prev, rows: [...prev.rows, { id: makeId(prev.rows.length), kind: "group", label: "新分组", cells: [] }] }));
+    setActive(nextIndex);
+    setPage(Math.floor(nextIndex / pageSize));
+  };
+
   const removeRow = () => {
     if (!current || !window.confirm(`删除第 ${active + 1} 行？`)) return;
     setState((prev) => ({ ...prev, rows: prev.rows.filter((_, index) => index !== active) }));
@@ -248,7 +328,11 @@ export default function TablePage() {
   };
 
   const updateCell = (cellIndex: number, value: string) =>
+    current?.kind === "group" ? undefined :
     setState((prev) => ({ ...prev, rows: prev.rows.map((row, index) => (index === active ? { ...row, cells: row.cells.map((cell, i) => (i === cellIndex ? value : cell)) } : row)) }));
+
+  const updateGroupLabel = (value: string) =>
+    setState((prev) => ({ ...prev, rows: prev.rows.map((row, index) => (index === active ? { ...row, label: value } : row)) }));
 
   const resetState = () => {
     if (!window.confirm("恢复初始表格？当前编辑内容会被覆盖。")) return;
@@ -282,6 +366,10 @@ export default function TablePage() {
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,
+      onclone: (doc) => {
+        const cloned = doc.querySelector(".tablex-sheet");
+        if (cloned) liftTextIntoPlace(doc, cloned);
+      },
     });
     return canvas.toDataURL("image/png");
   };
@@ -352,6 +440,7 @@ export default function TablePage() {
 
         <div className="midautumn-toolbar">
           <button className="midautumn-command" type="button" onClick={addRow}><Plus size={15} />新增一行</button>
+          <button className="midautumn-command" type="button" onClick={addGroup}><ListPlus size={15} />新增分组</button>
           <button className="midautumn-command is-primary" type="button" onClick={exportAllPages} disabled={exporting}><Download size={15} />{exporting ? "生成中" : `导出全部（${totalPages} 页）`}</button>
         </div>
 
@@ -389,7 +478,7 @@ export default function TablePage() {
           {rows.map((row, index) => (
             <button className={`midautumn-event-choice${index === active ? " is-active" : ""}`} type="button" key={row.id} onClick={() => selectRow(index)}>
               <span className="midautumn-event-number">{String(index + 1).padStart(2, "0")}</span>
-              <span><strong>{row.cells[0] || "未填写"}</strong><span>{row.cells[1] || "未填写"}</span></span>
+              <span><strong>{row.kind === "group" ? (row.label || "分组") : (row.cells[0] || "未填写")}</strong><span>{row.kind === "group" ? "分组标题行" : (row.cells[1] || "未填写")}</span></span>
             </button>
           ))}
           {rows.length === 0 && <div className="midautumn-empty-card">还没有数据行</div>}
@@ -398,7 +487,9 @@ export default function TablePage() {
         <div className="midautumn-section-label"><span>当前行</span><span>{current ? `第 ${active + 1} 行` : "无数据"}</span></div>
         {current ? (
           <form className="midautumn-form" onSubmit={(event) => event.preventDefault()} autoComplete="off">
-            {columns.map((column, cellIndex) => (
+            {current.kind === "group" ? (
+              <label className="midautumn-field"><span>分组标题</span><input value={current.label ?? ""} onChange={(event) => updateGroupLabel(event.target.value)} placeholder="如：西湖区 · 共 13 家" /></label>
+            ) : columns.map((column, cellIndex) => (
               <label className="midautumn-field" key={column.id}><span>{column.name || `列 ${cellIndex + 1}`}</span><input value={current.cells[cellIndex] ?? ""} onChange={(event) => updateCell(cellIndex, event.target.value)} /></label>
             ))}
           </form>
@@ -430,15 +521,21 @@ export default function TablePage() {
                   {columns.map((column) => <col key={column.id} style={{ width: columnWidth(column.weight) }} />)}
                 </colgroup>
                 <thead>
-                  <tr>{columns.map((column) => <th key={column.id} style={{ background: headerColor }}>{column.name}</th>)}</tr>
+                  <tr>{columns.map((column) => <th key={column.id} style={{ background: headerColor }}><span className={CELL_CLASS}>{column.name}</span></th>)}</tr>
                 </thead>
                 <tbody>
                   {group.length > 0 ? group.map((row, offset) => (
-                    <tr key={row.id}>
-                      {columns.map((column, cellIndex) => (
-                        <td key={column.id} style={{ textAlign: column.align, background: zebra && offset % 2 === 1 ? "#eef2f9" : undefined }}>{row.cells[cellIndex] ?? ""}</td>
-                      ))}
-                    </tr>
+                    row.kind === "group" ? (
+                      <tr key={row.id} className="tablex-group-row">
+                        <td colSpan={columns.length}><span className={CELL_CLASS}>{row.label}</span></td>
+                      </tr>
+                    ) : (
+                      <tr key={row.id}>
+                        {columns.map((column, cellIndex) => (
+                          <td key={column.id} style={{ textAlign: column.align, background: zebra && offset % 2 === 1 ? "#eef2f9" : undefined }}><span className={CELL_CLASS}>{row.cells[cellIndex] ?? ""}</span></td>
+                        ))}
+                      </tr>
+                    )
                   )) : (
                     <tr><td colSpan={columns.length} style={{ textAlign: "center", color: "#8a94a6" }}>本页暂无数据</td></tr>
                   )}

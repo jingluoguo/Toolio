@@ -274,8 +274,19 @@ button:disabled { cursor: not-allowed; }
 .tablex-sheet-head > div { width:78%; height:1px; margin:16px auto 0; background:#574a43; opacity:.55; }
 .tablex-table-wrap { flex:1 1 auto; min-height:0; margin-top:20px; overflow:hidden; }
 .tablex-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:calc(clamp(11px,1.35vw,14px) * var(--tablex-fit,1)); line-height:1.5; }
-.tablex-table th { padding:calc(10px * var(--tablex-fit,1)) calc(8px * var(--tablex-fit,1)); border:1px solid #8f9bb8; color:#fff; font-weight:700; text-align:center; word-break:break-all; }
-.tablex-table td { padding:calc(8px * var(--tablex-fit,1)) calc(9px * var(--tablex-fit,1)); border:1px solid #aab2c5; color:#243044; word-break:break-word; }
+.tablex-table th { vertical-align:middle; padding:0 calc(8px * var(--tablex-fit,1)); border:1px solid #8f9bb8; color:#fff; font-weight:700; text-align:center; word-break:break-all; }
+.tablex-table td { vertical-align:middle; padding:0 calc(9px * var(--tablex-fit,1)); border:1px solid #aab2c5; color:#243044; word-break:break-word; }
+.tablex-table tr.tablex-group-row td { padding:0 calc(9px * var(--tablex-fit,1)); background:#f2f6fb; color:#16375c; font-weight:800; text-align:left; letter-spacing:1px; }
+/* Breathing room above/below every line of cell text. It must be margin, not
+   padding: html2canvas re-applies the vertical padding of the text's parent on
+   top of the already-laid-out line, which pushes the text downward in exports
+   (worst on short rows such as the header and the group rows). Margins are part
+   of real layout, so both the browser and the exporter agree. The remaining
+   baseline drift inside each line box is cancelled per font in
+   captureSheet()/liftTextIntoPlace (app/table/page.tsx). */
+.tablex-table .tablex-cell { display:block; margin:calc(8px * var(--tablex-fit,1)) 0; }
+.tablex-table thead .tablex-cell { margin:calc(10px * var(--tablex-fit,1)) 0; }
+.tablex-table tr.tablex-group-row .tablex-cell { margin:calc(6px * var(--tablex-fit,1)) 0; }
 .tablex-foot { margin-top:18px; color:#55666d; font-size:clamp(9px,1.15vw,11px); text-align:center; }
 .tablex-inline-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:end; }
 .tablex-inline-fields input[type="color"] { width:100%; height:36px; padding:2px 3px; border:1px solid #d8ccc2; border-radius:4px; background:#fff; cursor:pointer; }
@@ -298,7 +309,7 @@ button:disabled { cursor: not-allowed; }
 .midautumn-app .tablex-column-row input, .midautumn-app .tablex-column-row select { border-color:rgba(171,220,221,.21); background:#0b2a39; color:#eefbfa; }
 .midautumn-app .tablex-column-row > button { border-color:rgba(231,152,141,.36); background:rgba(96,35,35,.18); color:#f0b5ad; }
 @media (max-width:900px) { .tablex-sheet { width:min(760px,100%); min-width:0; padding:32px 22px 24px; } }
-@media (max-width:520px) { .tablex-sheet { padding:26px 12px 18px; } .tablex-table { font-size:11px; } .tablex-table th { padding:7px 5px; } .tablex-table td { padding:6px 5px; } }
+@media (max-width:520px) { .tablex-sheet { padding:26px 12px 18px; } .tablex-table { font-size:11px; } .tablex-table th { padding:0 5px; } .tablex-table td { padding:0 5px; } .tablex-table .tablex-cell { margin:5px 0; } .tablex-table thead .tablex-cell { margin:7px 0; } .tablex-table tr.tablex-group-row .tablex-cell { margin:4px 0; } }
 
 
 /* 小红书一键发文（扫码分享版） */
