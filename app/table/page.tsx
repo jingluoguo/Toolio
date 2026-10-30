@@ -152,6 +152,14 @@ function normalizeState(value: Partial<TableState>): TableState {
 // here instead of on the cell itself (see .tablex-cell in globals.css).
 const CELL_CLASS = "tablex-cell";
 
+// Lower bound of the auto-fit scale: below this a page holds so many rows that the
+// type stops being readable, so the table is allowed to clip instead of shrinking further.
+const MIN_TABLE_FIT = 0.38;
+
+// Budget of layout passes spent solving the auto-fit scale (see the useLayoutEffect
+// below). Each pass halves the search interval, so 10 passes land within 0.001.
+const FIT_SOLVE_STEPS = 10;
+
 const BASELINE_SAMPLE = "国Hg";
 const BLANK_GIF = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
@@ -218,6 +226,8 @@ export default function TablePage() {
   const tableWrapRef = useRef<HTMLDivElement | null>(null);
   const tableRef = useRef<HTMLTableElement | null>(null);
   const [fitScale, setFitScale] = useState(1);
+  const fitSolveRef = useRef<{ lo: number; hi: number; steps: number; done: boolean } | null>(null);
+  const fitKeyRef = useRef("");
 
   const { title, subtitle, footnote, headerColor, zebra, pageSize, columns, rows } = state;
   const current = rows[active];
@@ -259,26 +269,49 @@ export default function TablePage() {
     setPage((value) => Math.min(value, Math.ceil(rows.length / pageSize) - 1));
   }, [rows.length, pageSize]);
 
-  // The sheet keeps a fixed 3:4 ratio, so shrink the table type until this page fits.
-  const lastFitInputs = useRef<unknown[]>([]);
+  // The sheet keeps a fixed 3:4 ratio, so the table type shrinks until the page
+  // fits. Table height is *not* proportional to --tablex-fit: row padding and rules
+  // keep a fixed share, so the curve is steep and offset (10 rows measure 734px at
+  // fit 1 and 167px at 0.38). A proportional step therefore overshoots in both
+  // directions and the old version bounced between 1 and the floor until React
+  // aborted with "maximum update depth exceeded" — which is also why a new 每页行数
+  // used to leave the page clipped while the export dropped every row past the edge.
+  // Height is monotonic in the scale, so bisect it with a fixed pass budget instead.
+  // The previous frame-by-frame version also reset the scale to 1 and bailed out on
+  // input changes, a no-op whenever the scale already was 1.
   useLayoutEffect(() => {
-    const inputs: unknown[] = [rows, columns, page, pageSize, title, subtitle, footnote];
-    const previous = lastFitInputs.current;
-    const changed = previous.length !== inputs.length || inputs.some((value, index) => value !== previous[index]);
-    lastFitInputs.current = inputs;
-    if (changed) {
-      setFitScale(1);
-      return;
-    }
     const wrap = tableWrapRef.current;
     const table = tableRef.current;
     if (!wrap || !table) return;
     const available = wrap.clientHeight;
     const height = table.getBoundingClientRect().height;
-    if (available <= 0 || height <= available + 1) return;
-    // Light shrink only when a page would otherwise overflow; keeps normal pages at full size.
-    const next = Math.max(0.86, fitScale * (available / height) * 0.99);
-    if (fitScale - next > 0.004) setFitScale(next);
+    if (available <= 0 || height <= 0) return;
+
+    // Re-solve whenever the content that determines row heights changes.
+    const key = `${pageSize}|${page}|${rows.length}|${columns.length}`;
+    if (fitKeyRef.current !== key) {
+      fitKeyRef.current = key;
+      fitSolveRef.current = null;
+    }
+
+    let solve = fitSolveRef.current;
+    if (!solve) {
+      // Already comfortably filled — nothing to solve.
+      if (height <= available + 1 && height >= available * 0.94) return;
+      solve = { lo: MIN_TABLE_FIT, hi: 1, steps: 0, done: false };
+      fitSolveRef.current = solve;
+    }
+    if (solve.done) return;
+
+    // Classify the scale that is currently laid out, then probe the midpoint.
+    if (height > available + 1) solve.hi = Math.min(solve.hi, fitScale);
+    else solve.lo = Math.max(solve.lo, fitScale);
+    solve.steps += 1;
+
+    const settled = solve.steps >= FIT_SOLVE_STEPS || solve.hi - solve.lo < 0.005;
+    const next = settled ? solve.lo : (solve.lo + solve.hi) / 2;
+    if (settled) solve.done = true;
+    if (Math.abs(next - fitScale) > 0.0005) setFitScale(next);
   });
 
   const update = (patch: Partial<TableState>) => setState((prev) => ({ ...prev, ...patch }));
